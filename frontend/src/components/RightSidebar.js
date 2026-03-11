@@ -2,16 +2,24 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 export default function RightSidebar({ showSuggestionsOnly = false }) {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [suggestions, setSuggestions] = useState([]);
   const [following, setFollowing] = useState({});
   const [showSwitchModal, setShowSwitchModal] = useState(false);
   const [accounts, setAccounts] = useState([]);
 
   useEffect(() => {
-    axios.get('/api/users/suggestions').then(r => setSuggestions(r.data)).catch(() => {});
+    axios.get('/api/users/suggestions').then(r => {
+      setSuggestions(r.data);
+      // Pre-populate following state from server data
+      const initialFollowing = {};
+      r.data.forEach(s => { initialFollowing[s.id] = !!s.is_following; });
+      setFollowing(initialFollowing);
+    }).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -71,7 +79,7 @@ export default function RightSidebar({ showSuggestionsOnly = false }) {
                       : <div style={S.suggAvatarPh}>{sInitials}</div>
                     }
                     <div style={{ minWidth:0 }}>
-                      <div style={{ fontWeight:600, fontSize:13, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{s.username}</div>
+                      <div onClick={() => navigate(`/${s.username}`)} style={{ fontWeight:600, fontSize:13, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', cursor:'pointer' }}>{s.username}</div>
                       <div style={{ color:'#8e8e8e', fontSize:12 }}>
                         {s.followers_count > 0 ? `${s.followers_count} follower${s.followers_count !== 1 ? 's' : ''}` : 'New to Instagram'}
                       </div>
@@ -126,7 +134,7 @@ export default function RightSidebar({ showSuggestionsOnly = false }) {
                 const aInit = (acc.username || 'U')[0].toUpperCase();
                 return (
                   <div key={acc.id} style={{ ...S.accountRow, cursor:'pointer' }}
-                    onClick={() => { toast('Log out first, then log in as this account'); setShowSwitchModal(false); }}>
+                    onClick={() => { setShowSwitchModal(false); logout(); toast(`Switching account — please log in`); }}>
                     {aUrl ? <img src={aUrl} alt="" style={S.swAvatar} /> : <div style={{ ...S.swAvatarPh, background:'linear-gradient(135deg,#f093fb,#f5576c)' }}>{aInit}</div>}
                     <div style={{ flex:1 }}>
                       <div style={{ fontWeight:600, fontSize:14 }}>{acc.username}</div>

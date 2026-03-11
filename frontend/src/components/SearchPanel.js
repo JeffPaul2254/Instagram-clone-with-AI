@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 export default function SearchPanel({ onClose }) {
@@ -7,6 +8,7 @@ export default function SearchPanel({ onClose }) {
   const [recent, setRecent] = useState([]);
   const [loading, setLoading] = useState(false);
   const [following, setFollowing] = useState({});
+  const navigate = useNavigate();
   const inputRef = useRef();
   const debounceRef = useRef();
 
@@ -65,7 +67,7 @@ export default function SearchPanel({ onClose }) {
     const isFollowing = following[user.id];
 
     return (
-      <div style={S.userRow} onClick={() => saveRecent(user)}>
+      <div style={S.userRow} onClick={() => { saveRecent(user); navigate(`/${user.username}`); onClose(); }}>
         <div style={{ position: 'relative', flexShrink: 0 }}>
           {avatarUrl
             ? <img src={avatarUrl} alt="" style={S.avatar} />

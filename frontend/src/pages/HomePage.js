@@ -4,19 +4,15 @@ import Navbar from '../components/Navbar';
 import PostCard from '../components/PostCard';
 import RightSidebar from '../components/RightSidebar';
 import { useAuth } from '../context/AuthContext';
+import { useWindowWidth } from '../hooks/useWindowWidth';
 
 export default function HomePage() {
   const { user } = useAuth();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const windowWidth = useWindowWidth();
 
-  useEffect(() => {
-    fetchFeed();
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  useEffect(() => { fetchFeed(); }, []);
 
   const fetchFeed = async () => {
     try {
@@ -42,7 +38,15 @@ export default function HomePage() {
               ? [1,2,3].map(i => <PostSkeleton key={i} />)
               : posts.length === 0
                 ? <EmptyState />
-                : posts.map(post => <PostCard key={post.id} post={post} currentUser={user} />)
+                : posts.map(post => (
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    currentUser={user}
+                    onDeleted={(id) => setPosts(prev => prev.filter(p => p.id !== id))}
+                    onUpdated={(updated) => setPosts(prev => prev.map(p => p.id === updated.id ? { ...p, ...updated } : p))}
+                  />
+                ))
             }
           </main>
 
@@ -64,8 +68,10 @@ function EmptyState() {
       <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="#dbdbdb" strokeWidth="1">
         <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
       </svg>
-      <h3 style={{ marginTop:16, color:'#262626' }}>No Posts Yet</h3>
-      <p style={{ color:'#8e8e8e', marginTop:8 }}>Click the + icon in the sidebar to share your first post!</p>
+      <h3 style={{ marginTop:16, fontSize:22, fontWeight:600, color:'#262626' }}>Welcome to Instagram</h3>
+      <p style={{ color:'#8e8e8e', marginTop:8, maxWidth:300, lineHeight:1.6 }}>
+        Your feed shows posts from people you follow. Follow some accounts to get started, or share your first post!
+      </p>
     </div>
   );
 }

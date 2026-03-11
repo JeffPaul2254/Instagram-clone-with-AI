@@ -1,21 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { timeAgo, mediaUrl } from '../utils/helpers';
+import { useWindowWidth } from '../hooks/useWindowWidth';
 import RightSidebar from './RightSidebar';
 
-function timeAgo(dateStr) {
-  const diff = (Date.now() - new Date(dateStr)) / 1000;
-  if (diff < 60) return 'just now';
-  if (diff < 3600) return `${Math.floor(diff / 60)}m`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
-  if (diff < 604800) return `${Math.floor(diff / 86400)}d`;
-  return new Date(dateStr).toLocaleDateString('en-US', { month:'short', day:'numeric' });
-}
 
 export default function NotificationsPanel({ onClose }) {
   const [notifications, setNotifications] = useState([]);
   const [following, setFollowing] = useState({});
   const [loading, setLoading] = useState(true);
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const windowWidth = useWindowWidth();
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);

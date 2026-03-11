@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import NotificationsPanel from './NotificationsPanel';
 import SearchPanel from './SearchPanel';
 
@@ -19,19 +20,22 @@ export default function Navbar({ onNewPost }) {
   const [posting, setPosting] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadDMs, setUnreadDMs] = useState(0);
   const fileRef = useRef();
   const hoverTimer = useRef();
 
+  const navigate = useNavigate();
   const avatarUrl = user?.avatar ? `http://localhost:5000${user.avatar}` : null;
   const initials = (user?.username || 'U')[0].toUpperCase();
 
-  // Poll unread notification count
+  // Poll unread notification + DM count
   useEffect(() => {
     const fetchCount = () => {
       axios.get('/api/notifications/count').then(r => setUnreadCount(r.data.count)).catch(() => {});
+      axios.get('/api/messages/unread/count').then(r => setUnreadDMs(r.data.count)).catch(() => {});
     };
     fetchCount();
-    const interval = setInterval(fetchCount, 30000);
+    const interval = setInterval(fetchCount, 10000);
     return () => clearInterval(interval);
   }, []);
 
@@ -90,6 +94,7 @@ export default function Navbar({ onNewPost }) {
   const navItems = [
     {
       label: 'Home',
+      onClick: () => navigate('/'),
       icon: <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M9.005 16.545a2.997 2.997 0 012.997-2.997A2.997 2.997 0 0115 16.545V22h7V11.543L12 2 2 11.543V22h7.005z"/></svg>
     },
     {
@@ -98,15 +103,27 @@ export default function Navbar({ onNewPost }) {
     },
     {
       label: 'Explore',
+      onClick: () => navigate('/explore'),
       icon: <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
     },
     {
       label: 'Reels',
+      onClick: () => navigate('/reels'),
       icon: <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="2"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
     },
     {
       label: 'Messages',
-      icon: <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      onClick: () => { navigate('/messages'); setUnreadDMs(0); },
+      icon: (
+        <div style={{ position: 'relative' }}>
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          {unreadDMs > 0 && (
+            <div style={{ position:'absolute', top:-4, right:-4, background:'#ed4956', color:'#fff', borderRadius:'50%', width:16, height:16, fontSize:10, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', border:'2px solid #fff' }}>
+              {unreadDMs > 9 ? '9+' : unreadDMs}
+            </div>
+          )}
+        </div>
+      )
     },
     {
       label: 'Notifications',
@@ -157,7 +174,7 @@ export default function Navbar({ onNewPost }) {
           ))}
 
           {/* Profile */}
-          <button style={S.navItem} title="Profile">
+          <button style={S.navItem} title="Profile" onClick={() => navigate(`/${user?.username}`)}>
             <span style={S.iconWrap}>
               {avatarUrl
                 ? <img src={avatarUrl} alt="" style={{ width:26,height:26,borderRadius:'50%',objectFit:'cover' }} />
@@ -224,12 +241,17 @@ export default function Navbar({ onNewPost }) {
                 const aInit = (acc.username||'U')[0].toUpperCase();
                 return (
                   <div key={acc.id} style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 20px', cursor:'pointer' }}
-                    onClick={() => { toast('Log out first, then log in as this account'); setShowAccountSwitch(false); }}>
+                    onClick={() => {
+                      setShowAccountSwitch(false);
+                      logout();
+                      toast(`Switching to @${acc.username} — please log in`);
+                    }}>
                     {aUrl ? <img src={aUrl} alt="" style={S.swAvatar} /> : <div style={{ ...S.swAvatarPh, background:'linear-gradient(135deg,#f093fb,#f5576c)' }}>{aInit}</div>}
                     <div style={{ flex:1 }}>
                       <div style={{ fontWeight:600, fontSize:14 }}>{acc.username}</div>
                       <div style={{ color:'#8e8e8e', fontSize:12 }}>{acc.full_name}</div>
                     </div>
+                    <span style={{ fontSize:12, color:'#0095f6', fontWeight:600 }}>Switch</span>
                   </div>
                 );
               })}
