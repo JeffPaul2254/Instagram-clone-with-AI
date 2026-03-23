@@ -13,9 +13,8 @@ import ReelsPage from './pages/ReelsPage';
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
   if (loading) return (
-    <div style={{ display:'flex', justifyContent:'center', alignItems:'center', height:'100vh' }}>
-      <div style={{ width:32, height:32, border:'3px solid #dbdbdb', borderTopColor:'#262626', borderRadius:'50%', animation:'spin .8s linear infinite' }} />
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    <div className="app-loading">
+      <div className="spinner spinner--md" />
     </div>
   );
   return user ? children : <Navigate to="/login" replace />;
@@ -30,15 +29,15 @@ function PublicRoute({ children }) {
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
-      <Route path="/signup" element={<PublicRoute><SignupPage /></PublicRoute>} />
-      <Route path="/" element={<PrivateRoute><HomePage /></PrivateRoute>} />
-      <Route path="/explore" element={<PrivateRoute><ExplorePage /></PrivateRoute>} />
-      <Route path="/messages" element={<PrivateRoute><MessagesPage /></PrivateRoute>} />
+      <Route path="/login"           element={<PublicRoute><LoginPage /></PublicRoute>} />
+      <Route path="/signup"          element={<PublicRoute><SignupPage /></PublicRoute>} />
+      <Route path="/"                element={<PrivateRoute><HomePage /></PrivateRoute>} />
+      <Route path="/explore"         element={<PrivateRoute><ExplorePage /></PrivateRoute>} />
+      <Route path="/messages"        element={<PrivateRoute><MessagesPage /></PrivateRoute>} />
       <Route path="/messages/:userId" element={<PrivateRoute><MessagesPage /></PrivateRoute>} />
-      <Route path="/reels" element={<PrivateRoute><ReelsPage /></PrivateRoute>} />
-      <Route path="/:username" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="/reels"           element={<PrivateRoute><ReelsPage /></PrivateRoute>} />
+      <Route path="/:username"       element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
+      <Route path="*"                element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

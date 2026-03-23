@@ -7,8 +7,8 @@ import { useAuth } from '../context/AuthContext';
 import { useWindowWidth } from '../hooks/useWindowWidth';
 
 export default function HomePage() {
-  const { user } = useAuth();
-  const [posts, setPosts] = useState([]);
+  const { user }  = useAuth();
+  const [posts, setPosts]     = useState([]);
   const [loading, setLoading] = useState(true);
   const windowWidth = useWindowWidth();
 
@@ -22,37 +22,31 @@ export default function HomePage() {
     finally { setLoading(false); }
   };
 
-  // Hide sidebar below 1000px, just like real Instagram
   const showSidebar = windowWidth > 1000;
 
   return (
-    <div style={{ background:'#fafafa', minHeight:'100vh' }}>
+    <div className="home-layout">
       <Navbar onNewPost={post => setPosts(prev => [post, ...prev])} />
-
-      <div style={{ marginLeft:72, minHeight:'100vh' }}>
-        <div style={{ display:'flex', justifyContent: showSidebar ? 'center' : 'center', gap:28, padding:'32px 24px 40px', maxWidth:1035, margin:'0 auto', alignItems:'flex-start' }}>
-
-          {/* Feed — centers itself when sidebar is hidden */}
-          <main style={{ flex:'1 1 0', minWidth:0, maxWidth:614 }}>
+      <div className="home-inner">
+        <div className="home-content">
+          <main className="home-feed">
             {loading
-              ? [1,2,3].map(i => <PostSkeleton key={i} />)
+              ? [1, 2, 3].map(i => <PostSkeleton key={i} />)
               : posts.length === 0
                 ? <EmptyState />
                 : posts.map(post => (
-                  <PostCard
-                    key={post.id}
-                    post={post}
-                    currentUser={user}
-                    onDeleted={(id) => setPosts(prev => prev.filter(p => p.id !== id))}
-                    onUpdated={(updated) => setPosts(prev => prev.map(p => p.id === updated.id ? { ...p, ...updated } : p))}
-                  />
-                ))
+                    <PostCard
+                      key={post.id}
+                      post={post}
+                      currentUser={user}
+                      onDeleted={(id) => setPosts(prev => prev.filter(p => p.id !== id))}
+                      onUpdated={(updated) => setPosts(prev => prev.map(p => p.id === updated.id ? { ...p, ...updated } : p))}
+                    />
+                  ))
             }
           </main>
-
-          {/* Right Sidebar — hidden below 1000px */}
           {showSidebar && (
-            <aside style={{ width:319, flexShrink:0, position:'sticky', top:32 }}>
+            <aside className="home-sidebar">
               <RightSidebar />
             </aside>
           )}
@@ -64,12 +58,12 @@ export default function HomePage() {
 
 function EmptyState() {
   return (
-    <div style={{ textAlign:'center', padding:'80px 20px', display:'flex', flexDirection:'column', alignItems:'center' }}>
+    <div style={{ textAlign: 'center', padding: '80px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="#dbdbdb" strokeWidth="1">
         <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
       </svg>
-      <h3 style={{ marginTop:16, fontSize:22, fontWeight:600, color:'#262626' }}>Welcome to Instagram</h3>
-      <p style={{ color:'#8e8e8e', marginTop:8, maxWidth:300, lineHeight:1.6 }}>
+      <h3 style={{ marginTop: 16, fontSize: 22, fontWeight: 600 }}>Welcome to Instagram</h3>
+      <p className="text-muted" style={{ marginTop: 8, maxWidth: 300, lineHeight: 1.6 }}>
         Your feed shows posts from people you follow. Follow some accounts to get started, or share your first post!
       </p>
     </div>
@@ -78,15 +72,15 @@ function EmptyState() {
 
 function PostSkeleton() {
   return (
-    <div style={{ background:'#fff', border:'1px solid #dbdbdb', borderRadius:8, marginBottom:24, overflow:'hidden' }}>
-      <div style={{ display:'flex', alignItems:'center', gap:10, padding:'12px 16px' }}>
-        <div style={{ width:32,height:32,borderRadius:'50%',background:'#efefef' }} />
-        <div style={{ width:100,height:12,borderRadius:4,background:'#efefef' }} />
+    <div className="post-skel">
+      <div className="post-skel__hdr">
+        <div className="shimmer post-skel__av" />
+        <div className="shimmer post-skel__line" style={{ width: 100 }} />
       </div>
-      <div style={{ width:'100%',height:300,background:'#efefef' }} />
-      <div style={{ padding:16 }}>
-        <div style={{ width:80,height:12,borderRadius:4,background:'#efefef',marginBottom:8 }} />
-        <div style={{ width:'60%',height:12,borderRadius:4,background:'#efefef' }} />
+      <div className="shimmer post-skel__body" />
+      <div className="post-skel__foot">
+        <div className="shimmer post-skel__line" style={{ width: 80 }} />
+        <div className="shimmer post-skel__line" style={{ width: '60%' }} />
       </div>
     </div>
   );

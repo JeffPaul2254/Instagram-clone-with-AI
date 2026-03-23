@@ -3,29 +3,27 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { mediaUrl } from '../utils/helpers';
 
 export default function RightSidebar({ showSuggestionsOnly = false }) {
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
-  const [suggestions, setSuggestions] = useState([]);
-  const [following, setFollowing] = useState({});
+  const navigate         = useNavigate();
+  const [suggestions, setSuggestions]       = useState([]);
+  const [following, setFollowing]           = useState({});
   const [showSwitchModal, setShowSwitchModal] = useState(false);
-  const [accounts, setAccounts] = useState([]);
+  const [accounts, setAccounts]             = useState([]);
 
   useEffect(() => {
     axios.get('/api/users/suggestions').then(r => {
       setSuggestions(r.data);
-      // Pre-populate following state from server data
-      const initialFollowing = {};
-      r.data.forEach(s => { initialFollowing[s.id] = !!s.is_following; });
-      setFollowing(initialFollowing);
+      const init = {};
+      r.data.forEach(s => { init[s.id] = !!s.is_following; });
+      setFollowing(init);
     }).catch(() => {});
   }, []);
 
   useEffect(() => {
-    if (showSwitchModal) {
-      axios.get('/api/users/all').then(r => setAccounts(r.data)).catch(() => {});
-    }
+    if (showSwitchModal) axios.get('/api/users/all').then(r => setAccounts(r.data)).catch(() => {});
   }, [showSwitchModal]);
 
   const toggleFollow = async (userId) => {
@@ -37,55 +35,57 @@ export default function RightSidebar({ showSuggestionsOnly = false }) {
     } catch { setFollowing(f => ({ ...f, [userId]: prev })); }
   };
 
-  const avatarUrl = user?.avatar ? `http://localhost:5000${user.avatar}` : null;
-  const initials = (user?.username || 'U')[0].toUpperCase();
+  const avatarUrl = mediaUrl(user?.avatar);
+  const initials  = (user?.username || 'U')[0].toUpperCase();
 
   return (
     <>
-      <div style={S.sidebar}>
-        {/* Current User row — hidden in suggestions-only mode */}
+      <div className="sidebar-widget">
         {!showSuggestionsOnly && (
-          <div style={S.userRow}>
-            <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+          <div className="sidebar__user-row">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               {avatarUrl
-                ? <img src={avatarUrl} alt="" style={S.avatar} />
-                : <div style={S.avatarPh}>{initials}</div>
+                ? <img src={avatarUrl} alt="" className="avatar avatar--56" />
+                : <div className="avatar-ph avatar-ph--56">{initials}</div>
               }
               <div>
-                <div style={{ fontWeight:600, fontSize:14 }}>{user?.username}</div>
-                <div style={{ color:'#8e8e8e', fontSize:12 }}>{user?.full_name || ''}</div>
+                <div className="font-semi" style={{ fontSize: 14 }}>{user?.username}</div>
+                <div className="text-muted" style={{ fontSize: 12 }}>{user?.full_name || ''}</div>
               </div>
             </div>
-            <button style={S.switchBtn} onClick={() => setShowSwitchModal(true)}>Switch</button>
+            <button className="btn btn--accent font-bold" style={{ fontSize: 13 }} onClick={() => setShowSwitchModal(true)}>Switch</button>
           </div>
         )}
 
-        {/* Suggestions */}
         {suggestions.length > 0 && (
           <div style={{ marginTop: showSuggestionsOnly ? 0 : 16 }}>
-            <div style={S.suggestionsHeader}>
-              <span style={{ color:'#8e8e8e', fontWeight:600, fontSize:14 }}>Suggested for you</span>
-              <button style={{ fontWeight:600, fontSize:12, background:'none', border:'none', cursor:'pointer' }}>See All</button>
+            <div className="sidebar__sugg-hdr">
+              <span className="text-muted font-semi" style={{ fontSize: 14 }}>Suggested for you</span>
+              <button className="font-semi" style={{ fontSize: 12, background: 'none', border: 'none', cursor: 'pointer' }}>See All</button>
             </div>
             {suggestions.map(s => {
-              const sAvatarUrl = s.avatar ? `http://localhost:5000${s.avatar}` : null;
+              const sUrl     = mediaUrl(s.avatar);
               const sInitials = (s.username || 'U')[0].toUpperCase();
               const isFollowing = following[s.id];
               return (
-                <div key={s.id} style={S.suggRow}>
-                  <div style={{ display:'flex', alignItems:'center', gap:10, flex:1, minWidth:0 }}>
-                    {sAvatarUrl
-                      ? <img src={sAvatarUrl} alt="" style={S.suggAvatar} />
-                      : <div style={S.suggAvatarPh}>{sInitials}</div>
+                <div key={s.id} className="sidebar__sugg-row">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
+                    {sUrl
+                      ? <img src={sUrl} alt="" className="avatar avatar--32" />
+                      : <div className="avatar-ph avatar-ph--32 avatar-ph--pink">{sInitials}</div>
                     }
-                    <div style={{ minWidth:0 }}>
-                      <div onClick={() => navigate(`/${s.username}`)} style={{ fontWeight:600, fontSize:13, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', cursor:'pointer' }}>{s.username}</div>
-                      <div style={{ color:'#8e8e8e', fontSize:12 }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div className="truncate font-semi" style={{ fontSize: 13, cursor: 'pointer' }}
+                        onClick={() => navigate(`/${s.username}`)}>{s.username}</div>
+                      <div className="text-muted" style={{ fontSize: 12 }}>
                         {s.followers_count > 0 ? `${s.followers_count} follower${s.followers_count !== 1 ? 's' : ''}` : 'New to Instagram'}
                       </div>
                     </div>
                   </div>
-                  <button onClick={() => toggleFollow(s.id)} style={{ ...S.followBtn, ...(isFollowing ? S.followingBtn : {}) }}>
+                  <button
+                    onClick={() => toggleFollow(s.id)}
+                    className={`btn ${isFollowing ? 'btn--following-sm' : 'btn--follow-sm'}`}
+                  >
                     {isFollowing ? 'Following' : 'Follow'}
                   </button>
                 </div>
@@ -94,87 +94,60 @@ export default function RightSidebar({ showSuggestionsOnly = false }) {
           </div>
         )}
 
-        {/* Footer */}
         {!showSuggestionsOnly && (
-          <div style={S.footer}>
-            <div style={S.footerLinks}>
+          <div className="sidebar__footer">
+            <div className="sidebar__foot-links">
               {['About','Help','Press','API','Jobs','Privacy','Terms','Locations','Language'].map(l => (
-                <a key={l} href="#" style={S.footerLink}>{l}</a>
+                <a key={l} href="#" className="sidebar__foot-link">{l}</a>
               ))}
             </div>
-            <div style={{ color:'#c7c7c7', fontSize:11, marginTop:16 }}>© 2024 INSTAGRAM CLONE</div>
+            <div className="text-muted" style={{ fontSize: 11, marginTop: 16 }}>© 2024 INSTAGRAM CLONE</div>
           </div>
         )}
       </div>
 
       {/* Switch Account Modal */}
       {showSwitchModal && (
-        <div style={S.overlay} onClick={e => e.target === e.currentTarget && setShowSwitchModal(false)}>
-          <div style={S.modal}>
-            <div style={S.modalHeader}>
-              <span style={{ fontWeight:600, fontSize:16 }}>Switch Account</span>
-              <button onClick={() => setShowSwitchModal(false)} style={{ fontSize:22, background:'none', border:'none', cursor:'pointer', color:'#262626' }}>×</button>
+        <div className="overlay overlay--dm" onClick={e => e.target === e.currentTarget && setShowSwitchModal(false)}>
+          <div className="modal modal--switch">
+            <div className="modal__header">
+              <span className="font-semi" style={{ fontSize: 16 }}>Switch Account</span>
+              <button className="modal__close" onClick={() => setShowSwitchModal(false)}>×</button>
             </div>
-            <div style={{ padding:'8px 0' }}>
-              {/* Current account */}
-              <div style={S.accountRow}>
-                {avatarUrl ? <img src={avatarUrl} alt="" style={S.swAvatar} /> : <div style={S.swAvatarPh}>{initials}</div>}
-                <div style={{ flex:1 }}>
-                  <div style={{ fontWeight:600, fontSize:14 }}>{user?.username}</div>
-                  <div style={{ color:'#8e8e8e', fontSize:12 }}>{user?.full_name}</div>
+            <div style={{ padding: '8px 0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px' }}>
+                {avatarUrl ? <img src={avatarUrl} alt="" className="avatar avatar--44" /> : <div className="avatar-ph avatar-ph--44">{initials}</div>}
+                <div style={{ flex: 1 }}>
+                  <div className="font-semi" style={{ fontSize: 14 }}>{user?.username}</div>
+                  <div className="text-muted" style={{ fontSize: 12 }}>{user?.full_name}</div>
                 </div>
-                <div style={{ width:20, height:20, borderRadius:'50%', border:'2px solid #0095f6', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                  <div style={{ width:10, height:10, borderRadius:'50%', background:'#0095f6' }} />
+                <div style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--accent)' }} />
                 </div>
               </div>
-
-              {/* Other accounts */}
               {accounts.filter(a => a.id !== user?.id).map(acc => {
-                const aUrl = acc.avatar ? `http://localhost:5000${acc.avatar}` : null;
+                const aUrl  = mediaUrl(acc.avatar);
                 const aInit = (acc.username || 'U')[0].toUpperCase();
                 return (
-                  <div key={acc.id} style={{ ...S.accountRow, cursor:'pointer' }}
+                  <div key={acc.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', cursor: 'pointer' }}
                     onClick={() => { setShowSwitchModal(false); logout(); toast(`Switching account — please log in`); }}>
-                    {aUrl ? <img src={aUrl} alt="" style={S.swAvatar} /> : <div style={{ ...S.swAvatarPh, background:'linear-gradient(135deg,#f093fb,#f5576c)' }}>{aInit}</div>}
-                    <div style={{ flex:1 }}>
-                      <div style={{ fontWeight:600, fontSize:14 }}>{acc.username}</div>
-                      <div style={{ color:'#8e8e8e', fontSize:12 }}>{acc.full_name}</div>
+                    {aUrl ? <img src={aUrl} alt="" className="avatar avatar--44" /> : <div className="avatar-ph avatar-ph--44 avatar-ph--pink">{aInit}</div>}
+                    <div style={{ flex: 1 }}>
+                      <div className="font-semi" style={{ fontSize: 14 }}>{acc.username}</div>
+                      <div className="text-muted" style={{ fontSize: 12 }}>{acc.full_name}</div>
                     </div>
                   </div>
                 );
               })}
             </div>
-            <div style={{ height:1, background:'#efefef' }} />
-            <button style={S.addBtn} onClick={() => { setShowSwitchModal(false); logout(); }}>+ Add account</button>
-            <button style={S.logoutBtn} onClick={() => { setShowSwitchModal(false); logout(); }}>Log out</button>
+            <div className="divider" />
+            <button style={{ display: 'block', width: '100%', padding: '14px 20px', textAlign: 'left', fontWeight: 600, fontSize: 14, color: 'var(--accent)', cursor: 'pointer', background: 'none', border: 'none' }}
+              onClick={() => { setShowSwitchModal(false); logout(); }}>+ Add account</button>
+            <button style={{ display: 'block', width: '100%', padding: '14px 20px', textAlign: 'left', fontSize: 14, color: 'var(--text-primary)', cursor: 'pointer', background: 'none', border: 'none', marginBottom: 8 }}
+              onClick={() => { setShowSwitchModal(false); logout(); }}>Log out</button>
           </div>
         </div>
       )}
     </>
   );
 }
-
-const S = {
-  sidebar: { width:'100%' },
-  userRow: { display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:4 },
-  avatar: { width:56, height:56, borderRadius:'50%', objectFit:'cover' },
-  avatarPh: { width:56, height:56, borderRadius:'50%', background:'linear-gradient(135deg,#667eea,#764ba2)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontSize:20, fontWeight:600, flexShrink:0 },
-  switchBtn: { color:'#0095f6', fontWeight:700, fontSize:13, cursor:'pointer', background:'none', border:'none' },
-  suggestionsHeader: { display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 },
-  suggRow: { display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12, gap:8 },
-  suggAvatar: { width:32, height:32, borderRadius:'50%', objectFit:'cover', flexShrink:0 },
-  suggAvatarPh: { width:32, height:32, borderRadius:'50%', background:'linear-gradient(135deg,#f093fb,#f5576c)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontSize:13, fontWeight:600, flexShrink:0 },
-  followBtn: { color:'#0095f6', fontWeight:700, fontSize:13, cursor:'pointer', background:'none', border:'none', flexShrink:0 },
-  followingBtn: { color:'#8e8e8e' },
-  footer: { marginTop:24 },
-  footerLinks: { display:'flex', flexWrap:'wrap', gap:'4px 8px' },
-  footerLink: { color:'#c7c7c7', fontSize:11 },
-  overlay: { position:'fixed', inset:0, background:'rgba(0,0,0,.65)', zIndex:3000, display:'flex', alignItems:'center', justifyContent:'center' },
-  modal: { background:'#fff', borderRadius:12, width:400, maxWidth:'90vw', overflow:'hidden' },
-  modalHeader: { display:'flex', justifyContent:'space-between', alignItems:'center', padding:'16px 20px', borderBottom:'1px solid #dbdbdb' },
-  accountRow: { display:'flex', alignItems:'center', gap:12, padding:'12px 20px' },
-  swAvatar: { width:44, height:44, borderRadius:'50%', objectFit:'cover', flexShrink:0 },
-  swAvatarPh: { width:44, height:44, borderRadius:'50%', background:'linear-gradient(135deg,#667eea,#764ba2)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontSize:18, fontWeight:600, flexShrink:0 },
-  addBtn: { display:'block', width:'100%', padding:'14px 20px', textAlign:'left', fontWeight:600, fontSize:14, color:'#0095f6', cursor:'pointer', background:'none', border:'none' },
-  logoutBtn: { display:'block', width:'100%', padding:'14px 20px', textAlign:'left', fontSize:14, color:'#262626', cursor:'pointer', background:'none', border:'none', marginBottom:8 },
-};
