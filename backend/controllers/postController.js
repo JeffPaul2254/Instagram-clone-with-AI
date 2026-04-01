@@ -1,7 +1,14 @@
-// controllers/postController.js
-// Handles all post logic: create, feed, explore, like, comment, edit, delete.
+/**
+ * controllers/postController.js
+ *
+ * CHANGES from v1:
+ *  • toggleLike and addComment now call emitToUser() after inserting a
+ *    notification row, pushing both the notification itself and an updated
+ *    unread count to the post owner in real time.
+ *    This replaces the 10-second notification polling in Navbar.js.
+ */
 
-const { getDB } = require('../config/db');
+const { getDB, emitToUser } = require('../config/db');
 
 // POST /api/posts
 async function createPost(req, res) {
@@ -84,14 +91,30 @@ async function toggleLike(req, res) {
       return res.json({ liked: false });
     }
     await db.execute('INSERT INTO likes (user_id, post_id) VALUES (?, ?)', [req.user.id, postId]);
+
     // Notify the post owner (not yourself)
     const [post] = await db.execute('SELECT user_id FROM posts WHERE id = ?', [postId]);
     if (post.length && post[0].user_id !== req.user.id) {
-      await db.execute(
+      const [notifResult] = await db.execute(
         'INSERT INTO notifications (recipient_id, sender_id, type, post_id, message) VALUES (?,?,?,?,?)',
         [post[0].user_id, req.user.id, 'like', postId, 'liked your post']
       );
+      // Fetch the full notification row to push via socket
+      const [notifRows] = await db.execute(
+        `SELECT n.*, u.username, u.avatar FROM notifications n
+         JOIN users u ON n.sender_id = u.id WHERE n.id = ?`,
+        [notifResult.insertId]
+      );
+      emitToUser(post[0].user_id, 'notification:new', notifRows[0]);
+
+      // Push updated unread count
+      const [countRows] = await db.execute(
+        'SELECT COUNT(*) as count FROM notifications WHERE recipient_id = ? AND is_read = 0',
+        [post[0].user_id]
+      );
+      emitToUser(post[0].user_id, 'notification:count', { count: countRows[0].count });
     }
+
     res.json({ liked: true });
   } catch (err) {
     console.error('Like error:', err);
@@ -132,15 +155,28 @@ async function addComment(req, res) {
        JOIN users u ON c.user_id = u.id WHERE c.id = ?`,
       [result.insertId]
     );
+    res.json(rows[0]);
+
     // Notify the post owner
     const [post] = await db.execute('SELECT user_id FROM posts WHERE id = ?', [req.params.id]);
     if (post.length && post[0].user_id !== req.user.id) {
-      await db.execute(
+      const [notifResult] = await db.execute(
         'INSERT INTO notifications (recipient_id, sender_id, type, post_id, message) VALUES (?,?,?,?,?)',
         [post[0].user_id, req.user.id, 'comment', req.params.id, 'commented on your post']
       );
+      const [notifRows] = await db.execute(
+        `SELECT n.*, u.username, u.avatar FROM notifications n
+         JOIN users u ON n.sender_id = u.id WHERE n.id = ?`,
+        [notifResult.insertId]
+      );
+      emitToUser(post[0].user_id, 'notification:new', notifRows[0]);
+
+      const [countRows] = await db.execute(
+        'SELECT COUNT(*) as count FROM notifications WHERE recipient_id = ? AND is_read = 0',
+        [post[0].user_id]
+      );
+      emitToUser(post[0].user_id, 'notification:count', { count: countRows[0].count });
     }
-    res.json(rows[0]);
   } catch (err) {
     console.error('Comment error:', err);
     res.status(500).json({ error: 'Server error' });

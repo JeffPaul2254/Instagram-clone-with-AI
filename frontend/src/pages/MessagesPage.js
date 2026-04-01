@@ -1,3 +1,19 @@
+/**
+ * MessagesPage.js
+ *
+ * CHANGES from v1:
+ *  • setInterval polling replaced by Socket.io real-time events.
+ *    — Old: poll GET /api/messages/:id every 3 s AND poll
+ *           GET /api/messages/conversations every 3 s.
+ *           That was ~40 API calls per minute per open Messages tab.
+ *    — New: server emits 'dm:new' the instant a message is received;
+ *           'conversations:update' refreshes the sidebar simultaneously.
+ *           Zero polling loops remain in this component.
+ *  • axios and react-hot-toast are unchanged.
+ *  • activeUserRef keeps socket callbacks aligned with current state
+ *    without causing stale closure bugs.
+ */
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
@@ -5,11 +21,12 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { timeAgo, fullTime, mediaUrl } from '../utils/helpers';
 import { useWindowWidth } from '../hooks/useWindowWidth';
+import { useSocket } from '../hooks/useSocket';
 import Navbar from '../components/Navbar';
 
 export default function MessagesPage() {
-  const { user: currentUser } = useAuth();
-  const navigate  = useNavigate();
+  const { user: currentUser, token } = useAuth();
+  const navigate   = useNavigate();
   const { userId } = useParams();
 
   const [conversations, setConversations]   = useState([]);
@@ -22,12 +39,41 @@ export default function MessagesPage() {
   const [showNewDM, setShowNewDM]           = useState(false);
   const [hoveredMsg, setHoveredMsg]         = useState(null);
 
-  /* FIXED: replaced manual resize listener + useState with the shared hook */
-  const windowWidth = useWindowWidth();
-
+  const windowWidth    = useWindowWidth();
   const messagesEndRef = useRef(null);
   const inputRef       = useRef(null);
-  const pollRef        = useRef(null);
+  // Ref mirrors activeUser so socket callbacks always see the latest value
+  // without needing to be re-registered every time activeUser changes.
+  const activeUserRef  = useRef(null);
+
+  useEffect(() => { activeUserRef.current = activeUser; }, [activeUser]);
+
+  // ── Socket.io replaces the 3-second polling loops ───────────
+  const socket = useSocket(token);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on('dm:new', (message) => {
+      const current = activeUserRef.current;
+      if (current && (message.sender_id === current.id || message.recipient_id === current.id)) {
+        setMessages(prev => {
+          // Guard against duplicate (our own optimistic message already in the list)
+          if (prev.some(m => m.id === message.id)) return prev;
+          return [...prev, message];
+        });
+      }
+      fetchConversations();
+    });
+
+    socket.on('conversations:update', () => fetchConversations());
+
+    return () => {
+      socket.off('dm:new');
+      socket.off('conversations:update');
+    };
+  }, [socket]); // eslint-disable-line react-hooks/exhaustive-deps
+  // ────────────────────────────────────────────────────────────
 
   const fetchConversations = useCallback(async () => {
     try {
@@ -42,21 +88,11 @@ export default function MessagesPage() {
 
   useEffect(() => {
     if (userId && !activeUser) {
-      axios.get(`/api/users/${userId}/profile`).then(r => openConversation(r.data)).catch(() => {});
+      axios.get(`/api/users/${userId}/profile`)
+        .then(r => openConversation(r.data))
+        .catch(() => {});
     }
-  }, [userId]); // eslint-disable-line
-
-  useEffect(() => {
-    if (!activeUser) return;
-    pollRef.current = setInterval(async () => {
-      try {
-        const { data } = await axios.get(`/api/messages/${activeUser.id}`);
-        setMessages(data);
-      } catch {}
-      fetchConversations();
-    }, 3000);
-    return () => clearInterval(pollRef.current);
-  }, [activeUser, fetchConversations]);
+  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const openConversation = async (user) => {
     setActiveUser(user);
@@ -66,8 +102,11 @@ export default function MessagesPage() {
       const { data } = await axios.get(`/api/messages/${user.id}`);
       setMessages(data);
       setConversations(prev => prev.map(c => c.id === user.id ? { ...c, unread_count: 0 } : c));
-    } catch { toast.error('Failed to load messages'); }
-    finally { setLoadingMsgs(false); }
+    } catch {
+      toast.error('Failed to load messages');
+    } finally {
+      setLoadingMsgs(false);
+    }
     setTimeout(() => inputRef.current?.focus(), 100);
   };
 
@@ -81,17 +120,19 @@ export default function MessagesPage() {
     const text = messageText.trim();
     setMessageText('');
     setSending(true);
+
     const optimistic = {
-      id: `temp-${Date.now()}`,
-      sender_id: currentUser.id,
+      id:           `temp-${Date.now()}`,
+      sender_id:    currentUser.id,
       recipient_id: activeUser.id,
       text,
-      created_at: new Date().toISOString(),
-      username: currentUser.username,
-      avatar: currentUser.avatar,
-      pending: true,
+      created_at:   new Date().toISOString(),
+      username:     currentUser.username,
+      avatar:       currentUser.avatar,
+      pending:      true,
     };
     setMessages(prev => [...prev, optimistic]);
+
     try {
       const { data } = await axios.post(`/api/messages/${activeUser.id}`, { text });
       setMessages(prev => prev.map(m => m.id === optimistic.id ? data : m));
@@ -100,7 +141,9 @@ export default function MessagesPage() {
       toast.error('Failed to send');
       setMessages(prev => prev.filter(m => m.id !== optimistic.id));
       setMessageText(text);
-    } finally { setSending(false); }
+    } finally {
+      setSending(false);
+    }
   };
 
   const deleteMessage = async (msgId) => {
@@ -109,14 +152,14 @@ export default function MessagesPage() {
     catch { toast.error('Failed to delete'); }
   };
 
-  const isMobile   = windowWidth < 768;
+  const isMobile    = windowWidth < 768;
   const showSidebar = !isMobile || !activeUser;
-  const showChat   = !isMobile || activeUser;
+  const showChat    = !isMobile || activeUser;
 
   const avatarEl = (user, size = 44) => {
-    const url  = mediaUrl(user?.avatar);
-    const init = (user?.username || 'U')[0].toUpperCase();
-    const cls  = `avatar avatar--${size}`;
+    const url   = mediaUrl(user?.avatar);
+    const init  = (user?.username || 'U')[0].toUpperCase();
+    const cls   = `avatar avatar--${size}`;
     const phCls = `avatar-ph avatar-ph--${size}`;
     return url
       ? <img src={url} alt="" className={cls} />
@@ -237,7 +280,6 @@ export default function MessagesPage() {
                     </div>
                   ) : (
                     <>
-                      {/* Profile info at top */}
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '32px 0 24px' }}>
                         {avatarEl(activeUser, 64)}
                         <div className="font-semi" style={{ fontSize: 15, marginTop: 12 }}>{activeUser.username}</div>
@@ -248,12 +290,9 @@ export default function MessagesPage() {
                         </button>
                       </div>
 
-                      {/* Bubbles */}
                       {messages.map((msg, idx) => {
-                        const isMe     = msg.sender_id === currentUser?.id;
-                        const prevMsg  = messages[idx - 1];
-                        const isLast   = !messages[idx + 1] || messages[idx + 1].sender_id !== msg.sender_id;
-
+                        const isMe  = msg.sender_id === currentUser?.id;
+                        const isLast = !messages[idx + 1] || messages[idx + 1].sender_id !== msg.sender_id;
                         return (
                           <div key={msg.id}
                             style={{ display: 'flex', flexDirection: isMe ? 'row-reverse' : 'row', alignItems: 'flex-end', gap: 8, marginBottom: 2, padding: '0 16px', position: 'relative' }}

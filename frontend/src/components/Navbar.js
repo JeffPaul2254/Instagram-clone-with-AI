@@ -1,14 +1,29 @@
+/**
+ * Navbar.js
+ *
+ * CHANGES from v1:
+ *  • Polling (setInterval every 10 s) replaced by Socket.io via useSocket hook.
+ *    — Old: two setInterval calls fetching /api/notifications/count and
+ *           /api/messages/unread/count every 10 seconds, generating ~12 API
+ *           calls per minute per open tab even when nothing changed.
+ *    — New: server pushes 'notification:count' and 'dm:count' events only when
+ *           counts actually change. One initial fetch on mount gets the current
+ *           state; the socket keeps it live after that.
+ *  • axios and react-hot-toast are unchanged.
+ */
+
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { mediaUrl } from '../utils/helpers';
+import { useSocket } from '../hooks/useSocket';
 import NotificationsPanel from './NotificationsPanel';
 import SearchPanel from './SearchPanel';
 
 export default function Navbar({ onNewPost }) {
-  const { user, logout } = useAuth();
+  const { user, logout, token } = useAuth();
   const [showCreate, setShowCreate]               = useState(false);
   const [showMore, setShowMore]                   = useState(false);
   const [showAccountSwitch, setShowAccountSwitch] = useState(false);
@@ -22,25 +37,35 @@ export default function Navbar({ onNewPost }) {
   const [expanded, setExpanded]                   = useState(false);
   const [unreadCount, setUnreadCount]             = useState(0);
   const [unreadDMs, setUnreadDMs]                 = useState(0);
+
   const fileRef    = useRef();
   const hoverTimer = useRef();
   const navigate   = useNavigate();
 
-  const avatarUrl = mediaUrl(user?.avatar);
-  const initials  = (user?.username || 'U')[0].toUpperCase();
+  // ── Socket.io replaces the old setInterval polling ──────────
+  const socket = useSocket(token);
 
   useEffect(() => {
-    const fetchCounts = () => {
-      axios.get('/api/notifications/count').then(r => setUnreadCount(r.data.count)).catch(() => {});
-      axios.get('/api/messages/unread/count').then(r => setUnreadDMs(r.data.count)).catch(() => {});
+    if (!socket) return;
+    socket.on('notification:count', ({ count }) => setUnreadCount(count));
+    socket.on('dm:count',           ({ count }) => setUnreadDMs(count));
+    return () => {
+      socket.off('notification:count');
+      socket.off('dm:count');
     };
-    fetchCounts();
-    const interval = setInterval(fetchCounts, 10000);
-    return () => clearInterval(interval);
+  }, [socket]);
+
+  // Fetch initial counts once on mount — socket events keep them fresh after
+  useEffect(() => {
+    axios.get('/api/notifications/count').then(r => setUnreadCount(r.data.count)).catch(() => {});
+    axios.get('/api/messages/unread/count').then(r => setUnreadDMs(r.data.count)).catch(() => {});
   }, []);
+  // ────────────────────────────────────────────────────────────
 
   useEffect(() => {
-    if (showAccountSwitch) axios.get('/api/users/all').then(r => setAccounts(r.data)).catch(() => {});
+    if (showAccountSwitch) {
+      axios.get('/api/users/all').then(r => setAccounts(r.data)).catch(() => {});
+    }
   }, [showAccountSwitch]);
 
   const handleMouseEnter = () => {
@@ -76,11 +101,17 @@ export default function Navbar({ onNewPost }) {
       onNewPost(data);
       toast.success('Post shared! ✨');
       closeCreate();
-    } catch { toast.error('Failed to post'); }
-    finally { setPosting(false); }
+    } catch {
+      toast.error('Failed to post');
+    } finally {
+      setPosting(false);
+    }
   };
 
   const closeCreate = () => { setShowCreate(false); setCaption(''); setImage(null); setPreview(null); };
+
+  const avatarUrl = mediaUrl(user?.avatar);
+  const initials  = (user?.username || 'U')[0].toUpperCase();
 
   const navItems = [
     {

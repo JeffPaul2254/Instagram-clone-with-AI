@@ -1,10 +1,29 @@
-// config/db.js
-// Handles the MySQL database connection and creates all tables on startup.
-// Every other file imports getDB() to run queries — they never connect directly.
+/**
+ * config/db.js
+ *
+ * CHANGES from v1:
+ *  • Added setIO() / emitToUser() so controllers can push Socket.io events
+ *    without importing the io instance or the server file.
+ *
+ *    Usage in a controller:
+ *      const { emitToUser } = require('../config/db');
+ *      emitToUser(recipientId, 'notification:new', notificationRow);
+ */
 
 const mysql = require('mysql2/promise');
 
 let db;
+let _emitToUser = () => {};   // no-op until server.js calls setIO()
+
+/** Called once from server.js after Socket.io is initialised */
+function setIO(emitFn) {
+  _emitToUser = emitFn;
+}
+
+/** Push a socket event to a specific user (all their open tabs) */
+function emitToUser(userId, event, payload) {
+  _emitToUser(userId, event, payload);
+}
 
 async function connectDB() {
   db = await mysql.createPool({
@@ -54,13 +73,13 @@ async function connectDB() {
     post_id INT DEFAULT NULL, message TEXT, is_read TINYINT(1) DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (recipient_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE)`);
+    FOREIGN KEY (sender_id)    REFERENCES users(id) ON DELETE CASCADE)`);
 
   await db.execute(`CREATE TABLE IF NOT EXISTS messages (
     id INT AUTO_INCREMENT PRIMARY KEY, sender_id INT NOT NULL, recipient_id INT NOT NULL,
     text TEXT NOT NULL, is_read TINYINT(1) DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (sender_id)    REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (recipient_id) REFERENCES users(id) ON DELETE CASCADE)`);
 
   await db.execute(`CREATE TABLE IF NOT EXISTS reels (
@@ -89,4 +108,4 @@ function getDB() {
   return db;
 }
 
-module.exports = { connectDB, getDB };
+module.exports = { connectDB, getDB, setIO, emitToUser };

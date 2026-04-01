@@ -1,7 +1,13 @@
-// controllers/messageController.js
-// Handles all direct messaging: conversations list, message history, send, delete.
+/**
+ * controllers/messageController.js
+ *
+ * CHANGES from v1:
+ *  • sendMessage now calls emitToUser() to push the new message to the
+ *    recipient in real time, and updates both users' unread DM counts.
+ *    This replaces the 3-second polling loop in MessagesPage.js.
+ */
 
-const { getDB } = require('../config/db');
+const { getDB, emitToUser } = require('../config/db');
 
 // GET /api/messages/conversations
 async function getConversations(req, res) {
@@ -89,7 +95,24 @@ async function sendMessage(req, res) {
       'SELECT m.*, u.username, u.avatar FROM messages m JOIN users u ON m.sender_id = u.id WHERE m.id = ?',
       [result.insertId]
     );
-    res.json(rows[0]);
+    const message = rows[0];
+    res.json(message);
+
+    // ── Push real-time events ──────────────────────────────────
+    // Tell the recipient's open tab(s) about the new message immediately
+    emitToUser(recipientId, 'dm:new', message);
+    // Tell both sides to refresh their conversation sidebar
+    emitToUser(recipientId,   'conversations:update', {});
+    emitToUser(req.user.id,   'conversations:update', {});
+
+    // Update the recipient's unread badge count
+    const [unread] = await db.execute(
+      'SELECT COUNT(*) as count FROM messages WHERE recipient_id = ? AND is_read = 0',
+      [recipientId]
+    );
+    emitToUser(recipientId, 'dm:count', { count: unread[0].count });
+    // ──────────────────────────────────────────────────────────
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
