@@ -3,14 +3,14 @@
 
 const fs = require('fs');
 const { getDB } = require('../config/db');
-const { ALLOWED_VIDEO_TYPES } = require('../config/multer');
+const { ALLOWED_VIDEO_MIMES } = require('../config/multer');
 
 // POST /api/reels
 async function uploadReel(req, res) {
   try {
     const db = getDB();
     if (!req.file) return res.status(400).json({ error: 'Video is required' });
-    if (!ALLOWED_VIDEO_TYPES.includes(req.file.mimetype)) {
+    if (!ALLOWED_VIDEO_MIMES.has(req.file.mimetype)) {
       fs.unlink(req.file.path, () => {});
       return res.status(400).json({ error: 'Only video files are allowed' });
     }

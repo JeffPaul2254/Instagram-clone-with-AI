@@ -85,7 +85,12 @@ async function sendMessage(req, res) {
     const db          = getDB();
     const { text }    = req.body;
     const recipientId = parseInt(req.params.userId);
+    if (isNaN(recipientId)) return res.status(400).json({ error: 'Invalid user ID' });
     if (!text?.trim()) return res.status(400).json({ error: 'Message cannot be empty' });
+
+    // Ensure recipient exists
+    const [recipient] = await db.execute('SELECT id FROM users WHERE id = ?', [recipientId]);
+    if (!recipient.length) return res.status(404).json({ error: 'Recipient not found' });
 
     const [result] = await db.execute(
       'INSERT INTO messages (sender_id, recipient_id, text) VALUES (?, ?, ?)',

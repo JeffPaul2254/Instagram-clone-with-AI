@@ -296,7 +296,7 @@ function ReelActions({ reel, currentUser, onLikeUpdate, onDeleted, onShowComment
   useEffect(() => {
     setLiked(reel.user_liked > 0);
     setLikesCount(Number(reel.likes_count));
-  }, [reel.id]);
+  }, [reel.id, reel.user_liked, reel.likes_count]);
 
   const toggleLike = async () => {
     const newLiked = !liked;

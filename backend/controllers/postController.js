@@ -45,8 +45,10 @@ async function getFeed(req, res) {
         (SELECT COUNT(*) FROM comments WHERE post_id = p.id)              as comments_count,
         (SELECT COUNT(*) FROM likes    WHERE post_id = p.id AND user_id = ?) as user_liked
        FROM posts p JOIN users u ON p.user_id = u.id
+       WHERE p.user_id = ?
+          OR p.user_id IN (SELECT following_id FROM follows WHERE follower_id = ?)
        ORDER BY p.created_at DESC LIMIT 50`,
-      [req.user.id]
+      [req.user.id, req.user.id, req.user.id]
     );
     res.json(posts);
   } catch (err) {
@@ -218,4 +220,24 @@ async function editCaption(req, res) {
   }
 }
 
-module.exports = { createPost, getFeed, getExplore, toggleLike, getComments, addComment, deletePost, editCaption };
+// GET /api/posts/:id/likes
+async function getLikes(req, res) {
+  try {
+    const db = getDB();
+    const [rows] = await db.execute(
+      `SELECT u.id, u.username, u.full_name, u.avatar,
+         (SELECT COUNT(*) FROM follows WHERE follower_id = ? AND following_id = u.id) as is_following
+       FROM likes l
+       JOIN users u ON l.user_id = u.id
+       WHERE l.post_id = ?
+       ORDER BY l.created_at DESC`,
+      [req.user.id, req.params.id]
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error('getLikes error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+}
+
+module.exports = { createPost, getFeed, getExplore, toggleLike, getComments, addComment, deletePost, editCaption, getLikes };

@@ -98,7 +98,7 @@ export default function RightSidebar({ showSuggestionsOnly = false }) {
           <div className="sidebar__footer">
             <div className="sidebar__foot-links">
               {['About','Help','Press','API','Jobs','Privacy','Terms','Locations','Language'].map(l => (
-                <a key={l} href="#" className="sidebar__foot-link">{l}</a>
+                <button key={l} className="sidebar__foot-link">{l}</button>
               ))}
             </div>
             <div className="text-muted" style={{ fontSize: 11, marginTop: 16 }}>© 2024 INSTAGRAM CLONE</div>

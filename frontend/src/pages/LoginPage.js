@@ -50,7 +50,7 @@ export default function LoginPage() {
             </svg>
             <span>Log in with Facebook</span>
           </button>
-          <a href="#" className="auth-card__forgot">Forgot password?</a>
+          <button className="auth-card__forgot">Forgot password?</button>
         </div>
 
         <div className="auth-login-card">

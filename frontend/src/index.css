@@ -191,6 +191,8 @@ input, textarea { font-family: inherit; }
 .modal--edit-post     { width: 90vw; max-width: 700px; max-height: 90vh; display: flex; flex-direction: column; }
 .modal--delete        { width: 400px; max-width: 90vw; }
 .modal--edit-profile  { width: 480px; max-width: 95vw; max-height: 90vh; display: flex; flex-direction: column; }
+.modal--follow-list   { width: 400px; max-width: 95vw; height: 80vh; max-height: 560px; display: flex; flex-direction: column; }
+.modal--likes         { width: 400px; max-width: 95vw; height: 80vh; max-height: 480px; display: flex; flex-direction: column; }
 .modal__header        { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
 .modal__header--sm    { padding: 14px 16px; }
 .modal__close         { font-size: 22px; line-height: 1; color: var(--text-primary); background: none; border: none; cursor: pointer; }
@@ -243,7 +245,7 @@ input, textarea { font-family: inherit; }
 .sidebar__sugg-row  { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 8px; }
 .sidebar__footer    { margin-top: 24px; }
 .sidebar__foot-links { display: flex; flex-wrap: wrap; gap: 4px 8px; }
-.sidebar__foot-link { color: var(--text-muted); font-size: 11px; }
+.sidebar__foot-link  { color: var(--text-muted); font-size: 11px; background: none; border: none; padding: 0; cursor: pointer; font-family: inherit; }
 
 /* ── POST CARD ──────────────────────────────────────────────── */
 .post-card           { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 24px; overflow: hidden; }

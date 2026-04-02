@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -18,6 +18,7 @@ export default function PostCard({ post, currentUser, onDeleted, onUpdated }) {
   const [caption, setCaption]           = useState(post.caption || '');
   const [showEditModal, setShowEditModal]   = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showLikes, setShowLikes]           = useState(false);
 
   const isOwnPost   = currentUser?.id === post.user_id;
   const navigate    = useNavigate();
@@ -189,8 +190,17 @@ export default function PostCard({ post, currentUser, onDeleted, onUpdated }) {
         </div>
 
         {/* Likes */}
-        <div style={{ padding: '0 16px 4px', fontWeight: 600, fontSize: 14 }}>
-          {likesCount.toLocaleString()} {likesCount === 1 ? 'like' : 'likes'}
+        <div style={{ padding: '0 16px 4px' }}>
+          <button
+            onClick={() => likesCount > 0 && setShowLikes(true)}
+            style={{
+              fontWeight: 600, fontSize: 14, background: 'none', border: 'none',
+              padding: 0, cursor: likesCount > 0 ? 'pointer' : 'default',
+              color: 'var(--text-primary)',
+            }}
+          >
+            {likesCount.toLocaleString()} {likesCount === 1 ? 'like' : 'likes'}
+          </button>
         </div>
 
         {/* Caption */}
@@ -243,6 +253,13 @@ export default function PostCard({ post, currentUser, onDeleted, onUpdated }) {
           postId={post.id}
           onClose={() => setShowDeleteModal(false)}
           onDeleted={handleDeleted}
+        />
+      )}
+      {showLikes && (
+        <LikesModal
+          postId={post.id}
+          currentUser={currentUser}
+          onClose={() => setShowLikes(false)}
         />
       )}
     </>
@@ -361,6 +378,117 @@ function DeletePostModal({ postId, onClose, onDeleted }) {
           style={{ display: 'block', width: '100%', padding: 16, textAlign: 'center', fontSize: 14, cursor: 'pointer', background: 'none', border: 'none' }}>
           Cancel
         </button>
+      </div>
+    </div>
+  );
+}
+// ── LIKES MODAL ───────────────────────────────────────────────
+// Shows the list of users who liked a post.
+// Each row has a Follow / Following button (hidden for your own row).
+function LikesModal({ postId, currentUser, onClose }) {
+  const navigate = useNavigate();
+  const [users, setUsers]         = useState([]);
+  const [loading, setLoading]     = useState(true);
+  const [following, setFollowing] = useState({});
+
+  useEffect(() => {
+    axios.get(`/api/posts/${postId}/likes`)
+      .then(r => {
+        setUsers(r.data);
+        const init = {};
+        r.data.forEach(u => { init[u.id] = !!u.is_following; });
+        setFollowing(init);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [postId]);
+
+  const toggleFollow = async (userId) => {
+    const was = following[userId];
+    setFollowing(f => ({ ...f, [userId]: !was }));
+    try {
+      await axios.post(`/api/users/${userId}/follow`);
+      toast.success(was ? 'Unfollowed' : 'Followed!');
+    } catch {
+      setFollowing(f => ({ ...f, [userId]: was }));
+    }
+  };
+
+  return (
+    <div className="overlay overlay--dm" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal modal--likes">
+
+        {/* Header */}
+        <div className="modal__header" style={{ borderBottom: '1px solid var(--border-light)' }}>
+          <button className="modal__close" onClick={onClose}>×</button>
+          <span className="font-bold" style={{ fontSize: 16 }}>Likes</span>
+          <div style={{ width: 24 }} />
+        </div>
+
+        {/* Body */}
+        <div style={{ flex: 1, overflowY: 'auto' }}>
+
+          {/* Skeleton */}
+          {loading && [1,2,3,4,5].map(i => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px' }}>
+              <div className="shimmer" style={{ width: 44, height: 44, borderRadius: '50%', flexShrink: 0 }} />
+              <div style={{ flex: 1 }}>
+                <div className="shimmer" style={{ width: '45%', height: 12, borderRadius: 4, marginBottom: 6 }} />
+                <div className="shimmer" style={{ width: '30%', height: 11, borderRadius: 4 }} />
+              </div>
+              <div className="shimmer" style={{ width: 80, height: 30, borderRadius: 8 }} />
+            </div>
+          ))}
+
+          {/* Empty */}
+          {!loading && users.length === 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '60px 20px' }}>
+              <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#dbdbdb" strokeWidth="1.5">
+                <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+              </svg>
+              <p className="text-muted" style={{ marginTop: 16, fontSize: 14 }}>No likes yet.</p>
+            </div>
+          )}
+
+          {/* User rows */}
+          {!loading && users.map(u => {
+            const avatarUrl  = mediaUrl(u.avatar);
+            const initials   = (u.username || 'U')[0].toUpperCase();
+            const isSelf     = u.id === currentUser?.id;
+            const isFollowed = following[u.id];
+            return (
+              <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px' }}>
+                <div
+                  style={{ flexShrink: 0, cursor: 'pointer' }}
+                  onClick={() => { onClose(); navigate(`/${u.username}`); }}
+                >
+                  {avatarUrl
+                    ? <img src={avatarUrl} alt="" className="avatar avatar--44" />
+                    : <div className="avatar-ph avatar-ph--44">{initials}</div>
+                  }
+                </div>
+                <div
+                  style={{ flex: 1, minWidth: 0, cursor: 'pointer' }}
+                  onClick={() => { onClose(); navigate(`/${u.username}`); }}
+                >
+                  <div className="truncate font-semi" style={{ fontSize: 14 }}>{u.username}</div>
+                  {u.full_name && (
+                    <div className="truncate text-muted" style={{ fontSize: 13 }}>{u.full_name}</div>
+                  )}
+                </div>
+                {!isSelf && (
+                  <button
+                    onClick={() => toggleFollow(u.id)}
+                    className={`btn ${isFollowed ? 'btn--following' : 'btn--follow'}`}
+                    style={{ flexShrink: 0, fontSize: 13, padding: '6px 16px' }}
+                  >
+                    {isFollowed ? 'Following' : 'Follow'}
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

@@ -53,9 +53,9 @@ export default function SignupPage() {
 
           <p className="text-muted" style={{ fontSize: 12, lineHeight: '16px', margin: '8px 0' }}>
             By signing up, you agree to our{' '}
-            <a href="#" style={{ color: 'var(--accent-dark)', fontWeight: 600 }}>Terms</a>,{' '}
-            <a href="#" style={{ color: 'var(--accent-dark)', fontWeight: 600 }}>Privacy Policy</a> and{' '}
-            <a href="#" style={{ color: 'var(--accent-dark)', fontWeight: 600 }}>Cookies Policy</a>.
+            <button type="button" style={{ color: 'var(--accent-dark)', fontWeight: 600, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 'inherit' }}>Terms</button>,{' '}
+            <button type="button" style={{ color: 'var(--accent-dark)', fontWeight: 600, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 'inherit' }}>Privacy Policy</button> and{' '}
+            <button type="button" style={{ color: 'var(--accent-dark)', fontWeight: 600, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 'inherit' }}>Cookies Policy</button>.
           </p>
 
           <button type="submit" className="auth-card__btn" disabled={loading}>

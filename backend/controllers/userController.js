@@ -1,7 +1,7 @@
 // controllers/userController.js
 // Handles user-related logic: search, suggestions, follow/unfollow, profile, posts grid.
 
-const { getDB } = require('../config/db');
+const { getDB, emitToUser } = require('../config/db');
 
 // GET /api/users/search?q=
 async function searchUsers(req, res) {
@@ -73,10 +73,22 @@ async function toggleFollow(req, res) {
       return res.json({ following: false });
     }
     await db.execute('INSERT INTO follows (follower_id, following_id) VALUES (?, ?)', [req.user.id, followingId]);
-    await db.execute(
+    const [notifResult] = await db.execute(
       'INSERT INTO notifications (recipient_id, sender_id, type, message) VALUES (?,?,?,?)',
       [followingId, req.user.id, 'follow', 'started following you']
     );
+    // Push real-time notification to the followed user
+    const [notifRows] = await db.execute(
+      `SELECT n.*, u.username, u.avatar FROM notifications n
+       JOIN users u ON n.sender_id = u.id WHERE n.id = ?`,
+      [notifResult.insertId]
+    );
+    emitToUser(followingId, 'notification:new', notifRows[0]);
+    const [countRows] = await db.execute(
+      'SELECT COUNT(*) as count FROM notifications WHERE recipient_id = ? AND is_read = 0',
+      [followingId]
+    );
+    emitToUser(followingId, 'notification:count', { count: countRows[0].count });
     res.json({ following: true });
   } catch (err) {
     console.error(err);
@@ -154,4 +166,48 @@ async function getUserPosts(req, res) {
   }
 }
 
-module.exports = { searchUsers, getAllUsers, getSuggestions, toggleFollow, updateProfile, getProfile, getUserPosts };
+// GET /api/users/:id/followers
+async function getFollowers(req, res) {
+  try {
+    const db     = getDB();
+    const userId = parseInt(req.params.id);
+    if (isNaN(userId)) return res.status(400).json({ error: 'Invalid user ID' });
+    const [rows] = await db.execute(
+      `SELECT u.id, u.username, u.full_name, u.avatar,
+         (SELECT COUNT(*) FROM follows WHERE follower_id = ? AND following_id = u.id) as is_following
+       FROM follows f
+       JOIN users u ON f.follower_id = u.id
+       WHERE f.following_id = ?
+       ORDER BY f.created_at DESC`,
+      [req.user.id, userId]
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+}
+
+// GET /api/users/:id/following
+async function getFollowing(req, res) {
+  try {
+    const db     = getDB();
+    const userId = parseInt(req.params.id);
+    if (isNaN(userId)) return res.status(400).json({ error: 'Invalid user ID' });
+    const [rows] = await db.execute(
+      `SELECT u.id, u.username, u.full_name, u.avatar,
+         (SELECT COUNT(*) FROM follows WHERE follower_id = ? AND following_id = u.id) as is_following
+       FROM follows f
+       JOIN users u ON f.following_id = u.id
+       WHERE f.follower_id = ?
+       ORDER BY f.created_at DESC`,
+      [req.user.id, userId]
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+}
+
+module.exports = { searchUsers, getAllUsers, getSuggestions, toggleFollow, updateProfile, getProfile, getUserPosts, getFollowers, getFollowing };

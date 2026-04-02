@@ -8,7 +8,6 @@ export default function SearchPanel({ onClose }) {
   const [results, setResults]   = useState([]);
   const [recent, setRecent]     = useState([]);
   const [loading, setLoading]   = useState(false);
-  const [following, setFollowing] = useState({});
   const navigate   = useNavigate();
   const inputRef   = useRef();
   const debounceRef = useRef();
@@ -49,14 +48,6 @@ export default function SearchPanel({ onClose }) {
   };
 
   const clearAll = () => { localStorage.removeItem('ig_recent_searches'); setRecent([]); };
-
-  const toggleFollow = async (userId, e) => {
-    e.stopPropagation();
-    const prev = following[userId];
-    setFollowing(f => ({ ...f, [userId]: !prev }));
-    try { await axios.post(`/api/users/${userId}/follow`); }
-    catch { setFollowing(f => ({ ...f, [userId]: prev })); }
-  };
 
   const UserRow = ({ user, showRemove, onRemove }) => {
     const avatarUrl  = mediaUrl(user.avatar);

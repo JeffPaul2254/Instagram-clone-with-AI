@@ -8,7 +8,6 @@ import Navbar from '../components/Navbar';
 
 export default function ExplorePage() {
   const { user: currentUser } = useAuth();
-  const navigate  = useNavigate();
   const [posts, setPosts]               = useState([]);
   const [loading, setLoading]           = useState(true);
   const [selectedPost, setSelectedPost] = useState(null);

@@ -38,8 +38,12 @@ const ALL_ALLOWED_MIMES   = new Set([...ALLOWED_IMAGE_MIMES, ...ALLOWED_VIDEO_MI
 // ── Where to save and what to name the file ───────────────────
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    if (req.path.includes('avatar') || req.path.includes('profile')) return cb(null, './uploads/avatars');
-    if (req.path.includes('reels'))                                   return cb(null, './uploads/reels');
+    // req.baseUrl is the router mount path (e.g. '/api/users', '/api/reels')
+    // req.path is the sub-path within the router (often just '/')
+    // Using baseUrl is reliable across all routers; req.path alone is not.
+    const base = (req.baseUrl || '') + (req.path || '');
+    if (base.includes('avatar') || base.includes('profile')) return cb(null, './uploads/avatars');
+    if (base.includes('reels'))                               return cb(null, './uploads/reels');
     cb(null, './uploads/posts');
   },
   filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname)),
