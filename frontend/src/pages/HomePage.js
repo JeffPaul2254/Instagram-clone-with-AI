@@ -3,6 +3,7 @@ import axios from 'axios';
 import Navbar from '../components/Navbar';
 import PostCard from '../components/PostCard';
 import RightSidebar from '../components/RightSidebar';
+import StoriesBar from '../components/StoriesBar';
 import { useAuth } from '../context/AuthContext';
 import { useWindowWidth } from '../hooks/useWindowWidth';
 
@@ -30,6 +31,7 @@ export default function HomePage() {
       <div className="home-inner">
         <div className="home-content">
           <main className="home-feed">
+            <StoriesBar />
             {loading
               ? [1, 2, 3].map(i => <PostSkeleton key={i} />)
               : posts.length === 0

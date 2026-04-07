@@ -291,8 +291,16 @@ export default function MessagesPage() {
                       </div>
 
                       {messages.map((msg, idx) => {
-                        const isMe  = msg.sender_id === currentUser?.id;
+                        const isMe   = msg.sender_id === currentUser?.id;
                         const isLast = !messages[idx + 1] || messages[idx + 1].sender_id !== msg.sender_id;
+
+                        // Detect structured post-share message
+                        let postShare = null;
+                        try {
+                          const parsed = JSON.parse(msg.text);
+                          if (parsed?.type === 'post_share') postShare = parsed;
+                        } catch { /* plain text — ignore */ }
+
                         return (
                           <div key={msg.id}
                             style={{ display: 'flex', flexDirection: isMe ? 'row-reverse' : 'row', alignItems: 'flex-end', gap: 8, marginBottom: 2, padding: '0 16px', position: 'relative' }}
@@ -306,26 +314,42 @@ export default function MessagesPage() {
                             )}
 
                             {isMe && hoveredMsg === msg.id && !msg.pending && (
-                              <button onClick={() => deleteMessage(msg.id)} className="icon-btn" title="Delete" style={{ padding: '0 4px', alignSelf: 'center' }}>
-                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+                              <button onClick={() => deleteMessage(msg.id)} className="icon-btn" title="Delete"
+                                style={{ padding: '0 4px', alignSelf: 'center' }}>
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <polyline points="3 6 5 6 21 6"/>
+                                  <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                                </svg>
                               </button>
                             )}
 
-                            <div className={`bubble bubble--${isMe ? 'me' : 'them'}`}>
-                              <div
-                                className={`bubble__txt bubble__txt--${isMe ? 'me' : 'them'}`}
-                                style={{
-                                  borderRadius: isMe
-                                    ? `18px 18px ${isLast ? '4px' : '18px'} 18px`
-                                    : `18px 18px 18px ${isLast ? '4px' : '18px'}`,
-                                  opacity: msg.pending ? 0.6 : 1,
-                                }}>
-                                {msg.text}
+                            {postShare ? (
+                              /* ── Shared post mini-card ── */
+                              <div className={`bubble bubble--${isMe ? 'me' : 'them'}`}
+                                style={{ opacity: msg.pending ? 0.6 : 1 }}>
+                                <SharedPostCard share={postShare} isMe={isMe} isLast={isLast} navigate={navigate} />
+                                {hoveredMsg === msg.id && (
+                                  <div className="bubble__time">{fullTime(msg.created_at)}</div>
+                                )}
                               </div>
-                              {hoveredMsg === msg.id && (
-                                <div className="bubble__time">{fullTime(msg.created_at)}</div>
-                              )}
-                            </div>
+                            ) : (
+                              /* ── Plain text bubble ── */
+                              <div className={`bubble bubble--${isMe ? 'me' : 'them'}`}>
+                                <div
+                                  className={`bubble__txt bubble__txt--${isMe ? 'me' : 'them'}`}
+                                  style={{
+                                    borderRadius: isMe
+                                      ? `18px 18px ${isLast ? '4px' : '18px'} 18px`
+                                      : `18px 18px 18px ${isLast ? '4px' : '18px'}`,
+                                    opacity: msg.pending ? 0.6 : 1,
+                                  }}>
+                                  {msg.text}
+                                </div>
+                                {hoveredMsg === msg.id && (
+                                  <div className="bubble__time">{fullTime(msg.created_at)}</div>
+                                )}
+                              </div>
+                            )}
                           </div>
                         );
                       })}
@@ -454,5 +478,54 @@ function ConvoSkeleton() {
         </div>
       ))}
     </>
+  );
+}
+// ── SHARED POST CARD ──────────────────────────────────────────
+// Rendered inside a DM bubble when a message is a post_share JSON payload.
+// Shows the post image (or caption-only fallback), the poster's username,
+// and a "View post" button that navigates to their profile.
+function SharedPostCard({ share, isMe, isLast, navigate }) {
+  const imageUrl = mediaUrl(share.image_url);
+
+  const borderRadius = isMe
+    ? `18px 18px ${isLast ? '4px' : '18px'} 18px`
+    : `18px 18px 18px ${isLast ? '4px' : '18px'}`;
+
+  return (
+    <div
+      className={`shared-post-card shared-post-card--${isMe ? 'me' : 'them'}`}
+      style={{ borderRadius }}
+      onClick={() => navigate(`/${share.username}`)}
+    >
+      {/* Image or caption-only placeholder */}
+      {imageUrl ? (
+        <img
+          src={imageUrl}
+          alt="shared post"
+          className="shared-post-card__img"
+          style={{ borderRadius: `${borderRadius.split(' ').slice(0,2).join(' ')} 0 0` }}
+        />
+      ) : (
+        <div className="shared-post-card__no-img">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none"
+            stroke="rgba(255,255,255,.6)" strokeWidth="1.5">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5" fill="rgba(255,255,255,.6)"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+        </div>
+      )}
+
+      {/* Footer: username + caption + view link */}
+      <div className="shared-post-card__footer">
+        <div className="shared-post-card__username">@{share.username}</div>
+        {share.caption ? (
+          <div className="shared-post-card__caption">
+            {share.caption.length > 60 ? share.caption.slice(0, 60) + '…' : share.caption}
+          </div>
+        ) : null}
+        <div className="shared-post-card__cta">View post →</div>
+      </div>
+    </div>
   );
 }

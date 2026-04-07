@@ -100,6 +100,20 @@ async function connectDB() {
     text TEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)`);
 
+
+  await db.execute(`CREATE TABLE IF NOT EXISTS stories (
+    id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL,
+    image_url VARCHAR(255) NOT NULL, caption VARCHAR(200) DEFAULT '',
+    views_count INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)`);
+
+  await db.execute(`CREATE TABLE IF NOT EXISTS story_views (
+    id INT AUTO_INCREMENT PRIMARY KEY, story_id INT NOT NULL, user_id INT NOT NULL,
+    viewed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_story_view (story_id, user_id),
+    FOREIGN KEY (story_id) REFERENCES stories(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id)  REFERENCES users(id)   ON DELETE CASCADE)`);
   console.log('✅ Database tables ready');
 }
 

@@ -38,6 +38,7 @@ const userRoutes         = require('./routes/users');
 const notificationRoutes = require('./routes/notifications');
 const messageRoutes      = require('./routes/messages');
 const reelRoutes         = require('./routes/reels');
+const storyRoutes        = require('./routes/stories');
 
 const app          = express();
 const server       = http.createServer(app);   // wrap Express so Socket.io can share the port
@@ -113,6 +114,7 @@ app.use('/api/users',         userRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/messages',      messageRoutes);
 app.use('/api/reels',         reelRoutes);
+app.use('/api/stories',       storyRoutes);
 
 // ── Start ─────────────────────────────────────────────────────
 connectDB()

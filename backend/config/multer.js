@@ -27,7 +27,7 @@ const fs       = require('fs');
 const { fileTypeFromFile } = require('file-type');
 
 // Create upload folders if they don't exist yet
-['./uploads', './uploads/posts', './uploads/avatars', './uploads/reels'].forEach(dir => {
+['./uploads', './uploads/posts', './uploads/avatars', './uploads/reels', './uploads/stories'].forEach(dir => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 });
 
@@ -44,6 +44,7 @@ const storage = multer.diskStorage({
     const base = (req.baseUrl || '') + (req.path || '');
     if (base.includes('avatar') || base.includes('profile')) return cb(null, './uploads/avatars');
     if (base.includes('reels'))                               return cb(null, './uploads/reels');
+    if (base.includes('stories'))                             return cb(null, './uploads/stories');
     cb(null, './uploads/posts');
   },
   filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname)),
