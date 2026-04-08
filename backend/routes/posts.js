@@ -14,12 +14,13 @@ const { upload, validateFileType } = require('../config/multer');
 const {
   createPost, getFeed, getExplore,
   toggleLike, getComments, addComment,
-  deletePost, editCaption, getLikes,
+  deletePost, editCaption, getLikes, getPost,
 } = require('../controllers/postController');
 
 router.post('/',              authMiddleware, upload.single('image'), validateFileType, createPost);
 router.get('/feed',           authMiddleware, getFeed);
 router.get('/explore',        authMiddleware, getExplore);
+router.get('/:id',            authMiddleware, getPost);
 router.post('/:id/like',      authMiddleware, toggleLike);
 router.get('/:id/likes',      authMiddleware, getLikes);
 router.get('/:id/comments',   authMiddleware, getComments);

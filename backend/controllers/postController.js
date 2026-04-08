@@ -240,4 +240,29 @@ async function getLikes(req, res) {
   }
 }
 
-module.exports = { createPost, getFeed, getExplore, toggleLike, getComments, addComment, deletePost, editCaption, getLikes };
+// GET /api/posts/:id  — fetch a single post by id (used by PostDetailPage)
+async function getPost(req, res) {
+  try {
+    const db     = getDB();
+    const postId = parseInt(req.params.id);
+    if (isNaN(postId)) return res.status(400).json({ error: 'Invalid post ID' });
+
+    const [rows] = await db.execute(
+      `SELECT p.*, u.username, u.avatar, u.full_name,
+         (SELECT COUNT(*) FROM likes    WHERE post_id = p.id)                 as likes_count,
+         (SELECT COUNT(*) FROM comments WHERE post_id = p.id)                 as comments_count,
+         (SELECT COUNT(*) FROM likes    WHERE post_id = p.id AND user_id = ?) as user_liked
+       FROM posts p
+       JOIN users u ON p.user_id = u.id
+       WHERE p.id = ?`,
+      [req.user.id, postId]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Post not found' });
+    res.json(rows[0]);
+  } catch (err) {
+    console.error('getPost error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+}
+
+module.exports = { createPost, getFeed, getExplore, toggleLike, getComments, addComment, deletePost, editCaption, getLikes, getPost };

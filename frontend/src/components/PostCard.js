@@ -44,7 +44,7 @@ export default function PostCard({ post, currentUser, onDeleted, onUpdated, onHi
   const avatarUrl    = mediaUrl(post.avatar);
   const postImageUrl = mediaUrl(post.image_url);
   const initials     = (post.username || 'U')[0].toUpperCase();
-  const postUrl      = `${window.location.origin}/${post.username}`;
+  const postUrl      = `${window.location.origin}/p/${post.id}`;
 
   const closeSheet = () => { setSheet(null); setReportStep(null); };
 
@@ -271,7 +271,7 @@ export default function PostCard({ post, currentUser, onDeleted, onUpdated, onHi
                 {commentsOff ? 'Turn on commenting' : 'Turn off commenting'}
               </SheetBtn>
               <SheetBtn onClick={copyLink}>Copy link</SheetBtn>
-              <SheetBtn onClick={() => { closeSheet(); navigate(`/${post.username}`); }}>Go to post</SheetBtn>
+              <SheetBtn onClick={() => { closeSheet(); navigate(`/p/${post.id}`); }}>Go to post</SheetBtn>
               <SheetBtn bold onClick={closeSheet}>Cancel</SheetBtn>
             </>
           ) : (
@@ -285,7 +285,7 @@ export default function PostCard({ post, currentUser, onDeleted, onUpdated, onHi
               <SheetBtn onClick={() => { closeSheet(); toggleFollow(); }}>
                 {following ? `Unfollow @${post.username}` : `Follow @${post.username}`}
               </SheetBtn>
-              <SheetBtn onClick={() => { closeSheet(); navigate(`/${post.username}`); }}>Go to post</SheetBtn>
+              <SheetBtn onClick={() => { closeSheet(); navigate(`/p/${post.id}`); }}>Go to post</SheetBtn>
               <SheetBtn onClick={() => setSheet('share')}>Share to…</SheetBtn>
               <SheetBtn onClick={copyLink}>Copy link</SheetBtn>
               <SheetBtn onClick={() => setSheet('embed')}>Embed</SheetBtn>

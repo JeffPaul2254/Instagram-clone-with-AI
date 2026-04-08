@@ -2,13 +2,14 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import LoginPage    from './pages/LoginPage';
-import SignupPage   from './pages/SignupPage';
-import HomePage     from './pages/HomePage';
-import ProfilePage  from './pages/ProfilePage';
-import ExplorePage  from './pages/ExplorePage';
-import MessagesPage from './pages/MessagesPage';
-import ReelsPage    from './pages/ReelsPage';
+import LoginPage      from './pages/LoginPage';
+import SignupPage     from './pages/SignupPage';
+import HomePage       from './pages/HomePage';
+import ProfilePage    from './pages/ProfilePage';
+import ExplorePage    from './pages/ExplorePage';
+import MessagesPage   from './pages/MessagesPage';
+import ReelsPage      from './pages/ReelsPage';
+import PostDetailPage from './pages/PostDetailPage';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -36,6 +37,8 @@ function AppRoutes() {
       <Route path="/messages"         element={<PrivateRoute><MessagesPage /></PrivateRoute>} />
       <Route path="/messages/:userId" element={<PrivateRoute><MessagesPage /></PrivateRoute>} />
       <Route path="/reels"            element={<PrivateRoute><ReelsPage /></PrivateRoute>} />
+      {/* /p/:postId must come before /:username to avoid conflict */}
+      <Route path="/p/:postId"        element={<PrivateRoute><PostDetailPage /></PrivateRoute>} />
       <Route path="/:username"        element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
       <Route path="*"                 element={<Navigate to="/" replace />} />
     </Routes>

@@ -61,7 +61,7 @@ export default function RightSidebar({ showSuggestionsOnly = false }) {
           <div style={{ marginTop: showSuggestionsOnly ? 0 : 16 }}>
             <div className="sidebar__sugg-hdr">
               <span className="text-muted font-semi" style={{ fontSize: 14 }}>Suggested for you</span>
-              <button className="font-semi" style={{ fontSize: 12, background: 'none', border: 'none', cursor: 'pointer' }}>See All</button>
+              <button className="font-semi" onClick={() => navigate('/explore')} style={{ fontSize: 12, background: 'none', border: 'none', cursor: 'pointer' }}>See All</button>
             </div>
             {suggestions.map(s => {
               const sUrl     = mediaUrl(s.avatar);

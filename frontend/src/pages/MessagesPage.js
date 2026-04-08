@@ -24,6 +24,20 @@ import { useWindowWidth } from '../hooks/useWindowWidth';
 import { useSocket } from '../hooks/useSocket';
 import Navbar from '../components/Navbar';
 
+/**
+ * Converts a raw message text into a human-readable conversation preview.
+ * If the text is a JSON post_share payload, returns "Shared a post 📷"
+ * instead of dumping the raw JSON into the sidebar.
+ */
+function formatPreview(text) {
+  if (!text) return '';
+  try {
+    const parsed = JSON.parse(text);
+    if (parsed?.type === 'post_share') return 'Shared a post 📷';
+  } catch { /* plain text — fall through */ }
+  return text;
+}
+
 export default function MessagesPage() {
   const { user: currentUser, token } = useAuth();
   const navigate   = useNavigate();
@@ -213,7 +227,7 @@ export default function MessagesPage() {
                         <span className="text-muted" style={{ fontSize: 12, flexShrink: 0, marginLeft: 8 }}>{timeAgo(convo.last_message_at)}</span>
                       </div>
                       <div className="truncate" style={{ fontSize: 13, color: convo.unread_count > 0 ? 'var(--text-primary)' : 'var(--text-secondary)', fontWeight: convo.unread_count > 0 ? 600 : 400, marginTop: 2 }}>
-                        {convo.last_sender_id === currentUser?.id ? `You: ${convo.last_message}` : convo.last_message}
+                        {convo.last_sender_id === currentUser?.id ? `You: ${formatPreview(convo.last_message)}` : formatPreview(convo.last_message)}
                       </div>
                     </div>
                   </div>
