@@ -44,6 +44,7 @@ async function connectDB() {
   await db.execute(`CREATE TABLE IF NOT EXISTS posts (
     id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL,
     image_url VARCHAR(255), caption TEXT,
+    location VARCHAR(100) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)`);
 
@@ -100,6 +101,12 @@ async function connectDB() {
     text TEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)`);
 
+    await db.execute(`CREATE TABLE IF NOT EXISTS comment_likes (
+    id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL, comment_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_comment_like (user_id, comment_id),
+    FOREIGN KEY (user_id)    REFERENCES users(id)    ON DELETE CASCADE,
+    FOREIGN KEY (comment_id) REFERENCES comments(id) ON DELETE CASCADE)`);
 
   await db.execute(`CREATE TABLE IF NOT EXISTS stories (
     id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL,
@@ -114,6 +121,13 @@ async function connectDB() {
     UNIQUE KEY unique_story_view (story_id, user_id),
     FOREIGN KEY (story_id) REFERENCES stories(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id)  REFERENCES users(id)   ON DELETE CASCADE)`);
+
+  await db.execute(`CREATE TABLE IF NOT EXISTS saved_posts (
+    id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL, post_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_save (user_id, post_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE)`);
   console.log('✅ Database tables ready');
 }
 

@@ -59,6 +59,7 @@ export default function PostDetailPage() {
         setPost(p);
         setLiked(p.user_liked > 0);
         setLikesCount(Number(p.likes_count));
+        setBookmarked(p.user_saved > 0);
         setComments(cmtRes.data);
       })
       .catch(err => {
@@ -214,6 +215,16 @@ export default function PostDetailPage() {
                   {post.full_name && (
                     <div className="text-muted" style={{ fontSize: 12 }}>{post.full_name}</div>
                   )}
+                  {post.location && (
+                    <div className="post-location-tag">
+                      <svg viewBox="0 0 24 24" width="10" height="10" fill="none"
+                        stroke="currentColor" strokeWidth="2.5">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                      </svg>
+                      {post.location}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -323,7 +334,17 @@ export default function PostDetailPage() {
                 </div>
                 {/* Bookmark */}
                 <button
-                  onClick={() => { setBookmarked(p => !p); toast.success(bookmarked ? 'Removed from saved' : 'Saved!'); }}
+                  onClick={async () => {
+                    const newVal = !bookmarked;
+                    setBookmarked(newVal);
+                    try {
+                      await axios.post(`/api/posts/${postId}/save`);
+                      toast.success(newVal ? 'Saved!' : 'Removed from saved');
+                    } catch {
+                      setBookmarked(!newVal);
+                      toast.error('Failed to save');
+                    }
+                  }}
                   className="icon-btn"
                 >
                   <svg viewBox="0 0 24 24" width="24" height="24"

@@ -25,7 +25,7 @@ export default function PostCard({ post, currentUser, onDeleted, onUpdated, onHi
   const [showComments, setShowComments]   = useState(false);
   const [commentText, setCommentText]     = useState('');
   const [heartAnim, setHeartAnim]         = useState(false);
-  const [bookmarked, setBookmarked]       = useState(false);
+  const [bookmarked, setBookmarked]       = useState(post.user_saved > 0);
   const [following, setFollowing]         = useState(false);
   const [caption, setCaption]             = useState(post.caption || '');
   const [hideLikes, setHideLikes]         = useState(false);
@@ -122,11 +122,23 @@ export default function PostCard({ post, currentUser, onDeleted, onUpdated, onHi
                 : <div className="avatar-ph avatar-ph--32">{initials}</div>
               }
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span onClick={goToProfile} className="font-semi"
-                style={{ fontSize: 14, cursor: 'pointer' }}>{post.username}</span>
-              <span className="text-muted">•</span>
-              <span className="text-muted" style={{ fontSize: 13 }}>{timeAgo(post.created_at)}</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span onClick={goToProfile} className="font-semi"
+                  style={{ fontSize: 14, cursor: 'pointer', lineHeight: 1.3 }}>{post.username}</span>
+                <span className="text-muted">•</span>
+                <span className="text-muted" style={{ fontSize: 13 }}>{timeAgo(post.created_at)}</span>
+              </div>
+              {post.location && (
+                <span className="post-location-tag">
+                  <svg viewBox="0 0 24 24" width="10" height="10" fill="none"
+                    stroke="currentColor" strokeWidth="2.5">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                  </svg>
+                  {post.location}
+                </span>
+              )}
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -185,7 +197,18 @@ export default function PostCard({ post, currentUser, onDeleted, onUpdated, onHi
               </svg>
             </button>
           </div>
-          <button onClick={() => { setBookmarked(p => !p); toast.success(bookmarked ? 'Removed from saved' : 'Saved!'); }}
+          <button
+            onClick={async () => {
+              const newVal = !bookmarked;
+              setBookmarked(newVal);
+              try {
+                await axios.post(`/api/posts/${post.id}/save`);
+                toast.success(newVal ? 'Saved!' : 'Removed from saved');
+              } catch {
+                setBookmarked(!newVal);
+                toast.error('Failed to save');
+              }
+            }}
             className="icon-btn">
             <svg viewBox="0 0 24 24" width="24" height="24"
               fill={bookmarked ? 'var(--text-primary)' : 'none'} stroke="currentColor" strokeWidth="2">
@@ -223,17 +246,54 @@ export default function PostCard({ post, currentUser, onDeleted, onUpdated, onHi
           </button>
         )}
 
-        {/* ── Comments list ── */}
+        {/* ── Comments list updated with comments like feature ── */}
         {showComments && (
-          <div className="post-card__cmts">
-            {comments.map(c => (
-              <div key={c.id} className="post-card__cmt-row">
-                <span className="font-semi">{c.username}</span> {c.text}
-                <span className="text-muted" style={{ fontSize: 11, marginLeft: 8 }}>{timeAgo(c.created_at)}</span>
-              </div>
-            ))}
-          </div>
-        )}
+  <div className="post-card__cmts">
+    {comments.map(c => (
+      <div key={c.id} className="post-card__cmt-row">
+        <div style={{ flex: 1 }}>
+          <span className="font-semi">{c.username}</span> {c.text}
+          <span className="text-muted" style={{ fontSize: 11, marginLeft: 8 }}>{timeAgo(c.created_at)}</span>
+        </div>
+        <button
+          onClick={async () => {
+            const wasLiked = c.user_liked > 0;
+            // Optimistic update — change UI immediately before API responds
+            setComments(prev => prev.map(x =>
+              x.id === c.id
+                ? { ...x, user_liked: wasLiked ? 0 : 1, likes_count: wasLiked ? x.likes_count - 1 : x.likes_count + 1 }
+                : x
+            ));
+            try {
+              await axios.post(`/api/posts/comments/${c.id}/like`);
+            } catch {
+              // Roll back on error
+              setComments(prev => prev.map(x =>
+                x.id === c.id
+                  ? { ...x, user_liked: wasLiked ? 1 : 0, likes_count: wasLiked ? x.likes_count + 1 : x.likes_count - 1 }
+                  : x
+              ));
+            }
+          }}
+          className="cmt-like-btn"
+          aria-label="Like comment"
+        >
+          <svg viewBox="0 0 24 24" width="12" height="12"
+            fill={c.user_liked > 0 ? 'var(--danger)' : 'none'}
+            stroke={c.user_liked > 0 ? 'var(--danger)' : 'var(--text-secondary)'}
+            strokeWidth="2">
+            <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+          </svg>
+          {c.likes_count > 0 && (
+            <span style={{ fontSize: 11, color: 'var(--text-secondary)', marginLeft: 2 }}>
+              {c.likes_count}
+            </span>
+          )}
+        </button>
+      </div>
+    ))}
+  </div>
+)}
 
         {/* ── Add comment ── */}
         {!commentsOff && (
@@ -464,12 +524,10 @@ function ShareSheet({ post, postUrl, currentUser, onClose }) {
   const [sent, setSent]       = useState({});
   const debounce              = useRef();
 
-  // Load suggestions immediately on open
   useEffect(() => {
     axios.get('/api/users/suggestions').then(r => setResults(r.data)).catch(() => {});
   }, []);
 
-  // Live search as user types
   useEffect(() => {
     clearTimeout(debounce.current);
     if (!query.trim()) {
@@ -489,7 +547,6 @@ function ShareSheet({ post, postUrl, currentUser, onClose }) {
 
   const sendTo = async (userId, username) => {
     if (sent[userId]) return;
-    // Store as structured JSON so MessagesPage can render a mini post card
     const payload = JSON.stringify({
       type:      'post_share',
       post_id:   post.id,
@@ -506,7 +563,6 @@ function ShareSheet({ post, postUrl, currentUser, onClose }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', maxHeight: '60vh' }}>
-      {/* Search bar */}
       <div style={{ padding: '8px 16px 12px' }}>
         <div className="search-box" style={{ background: 'var(--border-light)' }}>
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
@@ -517,8 +573,6 @@ function ShareSheet({ post, postUrl, currentUser, onClose }) {
             placeholder="Search" className="search-box__input" autoFocus />
         </div>
       </div>
-
-      {/* Copy link quick action */}
       <div
         onClick={() => { navigator.clipboard.writeText(postUrl).then(() => toast.success('Link copied!')); onClose(); }}
         className="ig-share-copy-row"
@@ -532,8 +586,6 @@ function ShareSheet({ post, postUrl, currentUser, onClose }) {
         </div>
         <span style={{ fontSize: 14, fontWeight: 600 }}>Copy link</span>
       </div>
-
-      {/* User list */}
       <div style={{ flex: 1, overflowY: 'auto' }}>
         {loading && <div style={{ padding: 20, textAlign: 'center' }} className="text-muted">Searching…</div>}
         {!loading && results.filter(u => u.id !== currentUser?.id).map(u => {
@@ -564,7 +616,6 @@ function ShareSheet({ post, postUrl, currentUser, onClose }) {
           );
         })}
       </div>
-
       <div style={{ padding: '8px 16px 4px', borderTop: '1px solid var(--border-light)' }}>
         <SheetBtn bold onClick={onClose}>Cancel</SheetBtn>
       </div>

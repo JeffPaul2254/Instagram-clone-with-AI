@@ -152,12 +152,13 @@ async function getUserPosts(req, res) {
     const db = getDB();
     const [rows] = await db.execute(
       `SELECT p.*, u.username, u.avatar,
-        (SELECT COUNT(*) FROM likes    WHERE post_id = p.id)              as likes_count,
-        (SELECT COUNT(*) FROM comments WHERE post_id = p.id)              as comments_count,
-        (SELECT COUNT(*) FROM likes    WHERE post_id = p.id AND user_id = ?) as user_liked
+        (SELECT COUNT(*) FROM likes      WHERE post_id = p.id)              as likes_count,
+        (SELECT COUNT(*) FROM comments   WHERE post_id = p.id)              as comments_count,
+        (SELECT COUNT(*) FROM likes      WHERE post_id = p.id AND user_id = ?) as user_liked,
+        (SELECT COUNT(*) FROM saved_posts WHERE post_id = p.id AND user_id = ?) as user_saved
        FROM posts p JOIN users u ON p.user_id = u.id
        WHERE u.username = ? ORDER BY p.created_at DESC`,
-      [req.user.id, req.params.username]
+      [req.user.id, req.user.id, req.params.username]
     );
     res.json(rows);
   } catch (err) {

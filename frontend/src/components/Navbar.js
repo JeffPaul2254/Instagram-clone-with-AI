@@ -16,6 +16,7 @@ export default function Navbar({ onNewPost }) {
   const [showSearch, setShowSearch]               = useState(false);
   const [accounts, setAccounts]                   = useState([]);
   const [caption, setCaption]                     = useState('');
+  const [location, setLocation]                   = useState('');
   const [image, setImage]                         = useState(null);
   const [preview, setPreview]                     = useState(null);
   const [posting, setPosting]                     = useState(false);
@@ -71,6 +72,7 @@ export default function Navbar({ onNewPost }) {
     try {
       const fd = new FormData();
       fd.append('caption', caption);
+      if (location.trim()) fd.append('location', location.trim());
       if (image) fd.append('image', image);
       const { data } = await axios.post('/api/posts', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       onNewPost(data);
@@ -80,7 +82,14 @@ export default function Navbar({ onNewPost }) {
     finally { setPosting(false); }
   };
 
-  const closeCreate = () => { setShowCreate(false); setCaption(''); setImage(null); setPreview(null); };
+  // Reset all create-post state when modal closes
+  const closeCreate = () => {
+    setShowCreate(false);
+    setCaption('');
+    setLocation('');
+    setImage(null);
+    setPreview(null);
+  };
 
   const navItems = [
     {
@@ -235,27 +244,91 @@ export default function Navbar({ onNewPost }) {
               <span style={{ fontSize: 16, fontWeight: 600 }}>Create new post</span>
               <button className="modal__close" onClick={closeCreate}>×</button>
             </div>
+
             {!preview ? (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', cursor: 'pointer', minHeight: 400 }} onClick={() => fileRef.current.click()}>
-                <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="#262626" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                <p style={{ marginTop: 16, fontSize: 20, color: 'var(--text-primary)' }}>Drag photos and videos here</p>
-                <button className="btn btn--primary" style={{ marginTop: 20 }}>Select from computer</button>
+              /* ── Step 1: pick a file ── */
+              <div
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center',
+                  justifyContent: 'center', padding: '60px 20px', cursor: 'pointer', minHeight: 400 }}
+                onClick={() => fileRef.current.click()}
+              >
+                <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="#262626" strokeWidth="1.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                <p style={{ marginTop: 16, fontSize: 20, color: 'var(--text-primary)' }}>
+                  Drag photos and videos here
+                </p>
+                <button
+                  className="btn btn--primary"
+                  style={{ marginTop: 20 }}
+                  onClick={e => { e.stopPropagation(); fileRef.current.click(); }}
+                >
+                  Select from computer
+                </button>
                 <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFile} />
               </div>
             ) : (
+              /* ── Step 2: caption + location ── */
               <div style={{ display: 'flex', flex: 1, minHeight: 400 }}>
-                <img src={preview} alt="preview" style={{ width: 500, height: 450, objectFit: 'cover', borderRight: '1px solid var(--border)', flexShrink: 0 }} />
-                <div style={{ flex: 1, padding: 16, display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                    {avatarUrl ? <img src={avatarUrl} alt="" className="avatar avatar--32" /> : <div className="avatar-ph avatar-ph--32">{initials}</div>}
+                <img
+                  src={preview} alt="preview"
+                  style={{ width: 500, height: 450, objectFit: 'cover',
+                    borderRight: '1px solid var(--border)', flexShrink: 0 }}
+                />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  {/* Author row */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '16px 16px 12px' }}>
+                    {avatarUrl
+                      ? <img src={avatarUrl} alt="" className="avatar avatar--32" />
+                      : <div className="avatar-ph avatar-ph--32">{initials}</div>
+                    }
                     <span style={{ fontWeight: 600, fontSize: 14 }}>{user?.username}</span>
                   </div>
-                  <textarea value={caption} onChange={e => setCaption(e.target.value)} placeholder="Write a caption..."
-                    style={{ width: '100%', flex: 1, border: 'none', outline: 'none', resize: 'none', fontSize: 14, lineHeight: 1.6, minHeight: 200 }} maxLength={2200} />
-                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', textAlign: 'right' }}>{caption.length}/2,200</div>
-                  <button onClick={submitPost} className="btn btn--primary" disabled={posting} style={{ marginTop: 12, alignSelf: 'flex-end' }}>
-                    {posting ? 'Sharing...' : 'Share'}
-                  </button>
+
+                  {/* Caption textarea */}
+                  <textarea
+                    value={caption}
+                    onChange={e => setCaption(e.target.value)}
+                    placeholder="Write a caption..."
+                    style={{ flex: 1, padding: '0 16px', border: 'none', outline: 'none',
+                      resize: 'none', fontSize: 14, lineHeight: 1.6, minHeight: 120,
+                      fontFamily: 'inherit' }}
+                    maxLength={2200}
+                  />
+                  <div style={{ fontSize: 12, color: 'var(--text-secondary)',
+                    textAlign: 'right', padding: '4px 16px 8px' }}>
+                    {caption.length}/2,200
+                  </div>
+
+                  {/* Location input */}
+                  <div className="post-location-input-wrap">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+                      stroke="#8e8e8e" strokeWidth="2" style={{ flexShrink: 0 }}>
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                      <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    <input
+                      value={location}
+                      onChange={e => setLocation(e.target.value)}
+                      placeholder="Add location"
+                      maxLength={100}
+                      className="post-location-input"
+                    />
+                  </div>
+
+                  {/* Share button */}
+                  <div style={{ padding: '12px 16px' }}>
+                    <button
+                      onClick={submitPost}
+                      className="btn btn--primary"
+                      disabled={posting}
+                      style={{ width: '100%' }}
+                    >
+                      {posting ? 'Sharing...' : 'Share'}
+                    </button>
+                  </div>
                 </div>
               </div>
             )}

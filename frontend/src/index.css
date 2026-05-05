@@ -258,7 +258,7 @@ input, textarea { font-family: inherit; }
 .post-card__cmt-form { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-top: 1px solid var(--border-light); margin-top: 6px; }
 .post-card__cmt-input { flex: 1; border: none; outline: none; font-size: 14px; background: transparent; }
 .post-card__cmts     { padding: 0 16px; max-height: 200px; overflow-y: auto; }
-.post-card__cmt-row  { font-size: 14px; line-height: 1.5; margin-bottom: 4px; }
+.post-card__cmt-row  { font-size: 14px; line-height: 1.5; margin-bottom: 4px; display: flex; align-items: flex-start; justify-content: space-between; }
 
 /* ── SHIMMER / SKELETON ─────────────────────────────────────── */
 .shimmer      { background: linear-gradient(90deg, #efefef 25%, #e0e0e0 50%, #efefef 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
@@ -1083,3 +1083,148 @@ input, textarea { font-family: inherit; }
   .pdp-skeleton { flex-direction: column; }
   .pdp-skeleton__img { flex: none; height: 60vw; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   EXPLORE — SEARCH BAR, CATEGORY PILLS, HASHTAG LINKS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Search bar ── */
+.explore-search-wrap {
+  padding: 0 0 12px;
+}
+.explore-search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  transition: background var(--trans-fast);
+}
+.explore-search-box:focus-within {
+  background: var(--border);
+}
+.explore-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: var(--text-primary);
+  font-family: inherit;
+}
+.explore-search-input::placeholder { color: var(--text-secondary); }
+.explore-search-clear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* ── Category pills ── */
+.explore-cats {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  scrollbar-width: none;
+}
+.explore-cats::-webkit-scrollbar { display: none; }
+
+.explore-cat-pill {
+  flex-shrink: 0;
+  padding: 6px 16px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background var(--trans-fast), color var(--trans-fast), border-color var(--trans-fast);
+  white-space: nowrap;
+}
+.explore-cat-pill:hover {
+  background: var(--border-light);
+}
+.explore-cat-pill--active {
+  background: var(--text-primary);
+  color: var(--surface);
+  border-color: var(--text-primary);
+}
+
+/* ── Active filter label ── */
+.explore-filter-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding-bottom: 12px;
+}
+.explore-filter-clear {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+}
+
+/* ── Clickable hashtag in captions ── */
+.caption-hashtag {
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 500;
+}
+.caption-hashtag:hover {
+  text-decoration: underline;
+}
+
+/* ── Post location ── */
+.post-location-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1;
+}
+.post-location-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--border-light);
+}
+.post-location-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: transparent;
+  font-family: inherit;
+}
+.post-location-input::placeholder { color: var(--text-secondary); }
+
+/* ── Comment like button ── */
+.cmt-like-btn {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 2px 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-left: 8px;
+  opacity: 0.6;
+  transition: opacity var(--trans-fast);
+}
+.cmt-like-btn:hover { opacity: 1; }

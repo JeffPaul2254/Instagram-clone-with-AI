@@ -12,6 +12,9 @@ export default function ProfilePage() {
   const navigate               = useNavigate();
   const [profile, setProfile]       = useState(null);
   const [posts, setPosts]           = useState([]);
+  const [savedPosts, setSavedPosts] = useState([]);
+  const [savedLoading, setSavedLoading] = useState(false);
+  const [savedLoaded, setSavedLoaded]   = useState(false); // fetch once per visit
   const [loading, setLoading]       = useState(true);
   const [following, setFollowing]   = useState(false);
   const [activeTab, setActiveTab]   = useState('posts');
@@ -20,7 +23,8 @@ export default function ProfilePage() {
   const [followListModal, setFollowListModal] = useState(null); // 'followers' | 'following' | null
 
   useEffect(() => {
-    setLoading(true); setProfile(null); setPosts([]); setActiveTab('posts');
+    setLoading(true); setProfile(null); setPosts([]);
+    setActiveTab('posts'); setSavedLoaded(false); setSavedPosts([]);
     (async () => {
       try {
         const [pr, po] = await Promise.all([
@@ -33,6 +37,16 @@ export default function ProfilePage() {
       } finally { setLoading(false); }
     })();
   }, [username]); // eslint-disable-line
+
+  // Fetch saved posts lazily when the Saved tab is first opened
+  useEffect(() => {
+    if (activeTab !== 'saved' || !profile?.is_own || savedLoaded) return;
+    setSavedLoading(true);
+    axios.get('/api/posts/saved')
+      .then(r => { setSavedPosts(r.data); setSavedLoaded(true); })
+      .catch(() => toast.error('Failed to load saved posts'))
+      .finally(() => setSavedLoading(false));
+  }, [activeTab, profile, savedLoaded]);
 
   const toggleFollow = async () => {
     const prev = following; setFollowing(!prev);
@@ -82,7 +96,12 @@ export default function ProfilePage() {
                     <button onClick={toggleFollow} className={`btn ${following ? 'btn--following' : 'btn--follow'}`}>
                       {following ? 'Following' : 'Follow'}
                     </button>
-                    <button className="btn btn--secondary">Message</button>
+                    <button
+                      className="btn btn--secondary"
+                      onClick={() => navigate(`/messages/${profile.id}`)}
+                    >
+                      Message
+                    </button>
                   </div>
                 )}
               </div>
@@ -90,7 +109,13 @@ export default function ProfilePage() {
               {isOwn && (
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button onClick={() => setShowEditModal(true)} className="btn btn--secondary" style={{ flex: 1 }}>Edit profile</button>
-                  <button className="btn btn--secondary" style={{ flex: 1 }}>View archive</button>
+                  <button
+                    className="btn btn--secondary"
+                    style={{ flex: 1 }}
+                    onClick={() => toast('Archive coming soon')}
+                  >
+                    View archive
+                  </button>
                 </div>
               )}
               {/* Stats */}
@@ -151,7 +176,7 @@ export default function ProfilePage() {
           {activeTab === 'saved' && isOwn && (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 4px', borderBottom: '1px solid var(--border-light)' }}>
               <span className="text-muted" style={{ fontSize: 13 }}>Only you can see what you've saved</span>
-              <button className="btn btn--accent font-bold" style={{ fontSize: 13 }}>+ New Collection</button>
+              <button className="btn btn--accent font-bold" style={{ fontSize: 13 }} onClick={() => toast('Collections coming soon')}>+ New Collection</button>
             </div>
           )}
 
@@ -166,7 +191,7 @@ export default function ProfilePage() {
                 <p className="text-muted" style={{ fontSize: 14, textAlign: 'center', maxWidth: 300, lineHeight: 1.5 }}>
                   {isOwn ? 'When you share photos, they will appear on your profile.' : `When ${profile.username} shares photos, they'll appear here.`}
                 </p>
-                {isOwn && <button onClick={() => toast('Click the + in the sidebar!')} className="btn btn--accent font-bold" style={{ fontSize: 14, marginTop: 12 }}>Share your first photo</button>}
+                {isOwn && <button onClick={() => navigate('/')} className="btn btn--accent font-bold" style={{ fontSize: 14, marginTop: 12 }}>Share your first photo</button>}
               </div>
             ) : (
               <div className="profile-grid">
@@ -177,13 +202,35 @@ export default function ProfilePage() {
 
           {/* SAVED TAB */}
           {activeTab === 'saved' && (
-            <div className="profile-empty">
-              <div className="profile-empty__icon">
-                <svg viewBox="0 0 24 24" width="33" height="33" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+            savedLoading ? (
+              <div className="profile-grid">
+                {[1,2,3,4,5,6].map(i => (
+                  <div key={i} className="shimmer" style={{ aspectRatio: '1' }} />
+                ))}
               </div>
-              <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 12 }}>Save</h2>
-              <p className="text-muted" style={{ fontSize: 14, textAlign: 'center', maxWidth: 320, lineHeight: 1.5 }}>Save photos and videos that you want to see again. No one is notified, and only you can see what you've saved.</p>
-            </div>
+            ) : savedPosts.length === 0 ? (
+              <div className="profile-empty">
+                <div className="profile-empty__icon">
+                  <svg viewBox="0 0 24 24" width="33" height="33" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
+                  </svg>
+                </div>
+                <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 12 }}>Save</h2>
+                <p className="text-muted" style={{ fontSize: 14, textAlign: 'center', maxWidth: 320, lineHeight: 1.5 }}>
+                  Save photos and videos that you want to see again. No one is notified, and only you can see what you've saved.
+                </p>
+              </div>
+            ) : (
+              <div className="profile-grid">
+                {savedPosts.map(post => (
+                  <GridItem
+                    key={post.id}
+                    post={post}
+                    onClick={() => setSelectedPost(post)}
+                  />
+                ))}
+              </div>
+            )
           )}
 
           {/* TAGGED TAB */}
@@ -206,6 +253,7 @@ export default function ProfilePage() {
           onClose={() => setSelectedPost(null)}
           onDeleted={handlePostDeleted}
           onUpdated={(u) => { setPosts(p => p.map(x => x.id === u.id ? { ...x, ...u } : x)); setSelectedPost(p => ({ ...p, ...u })); }}
+          onUnsaved={(id) => setSavedPosts(p => p.filter(x => x.id !== id))}
         />
       )}
       {showEditModal && (
@@ -256,16 +304,19 @@ function GridItem({ post, onClick }) {
 }
 
 // ── POST DETAIL MODAL ─────────────────────────────────────────
-function PostDetailModal({ post, currentUser, onClose, onDeleted, onUpdated }) {
+function PostDetailModal({ post, currentUser, onClose, onDeleted, onUpdated, onUnsaved }) {
+  const navigate = useNavigate();
   const [comments, setComments]           = useState([]);
   const [commentText, setCommentText]     = useState('');
   const [liked, setLiked]                 = useState(post.user_liked > 0);
   const [likesCount, setLikesCount]       = useState(Number(post.likes_count));
-  const [bookmarked, setBookmarked]       = useState(false);
-  const [showDots, setShowDots]           = useState(false);
+  const [bookmarked, setBookmarked]       = useState(post.user_saved > 0);
   const [showLikes, setShowLikes]         = useState(false);
   const [editingCaption, setEditingCaption] = useState(false);
   const [captionText, setCaptionText]     = useState(post.caption || '');
+  const [sheet, setSheet]                 = useState(null); // null|'menu'|'report'|'share'
+  const [reportStep, setReportStep]       = useState(null);
+  const cmtInputRef                       = useRef();
   const isOwn = currentUser?.id === post.user_id;
 
   useEffect(() => { axios.get(`/api/posts/${post.id}/comments`).then(r => setComments(r.data)).catch(() => {}); }, [post.id]);
@@ -285,13 +336,28 @@ function PostDetailModal({ post, currentUser, onClose, onDeleted, onUpdated }) {
     try { await axios.put(`/api/posts/${post.id}/caption`, { caption: captionText }); onUpdated({ id: post.id, caption: captionText }); setEditingCaption(false); toast.success('Caption updated!'); }
     catch { toast.error('Failed to update'); }
   };
+  const toggleSave = async () => {
+    const newVal = !bookmarked;
+    setBookmarked(newVal);
+    try {
+      await axios.post(`/api/posts/${post.id}/save`);
+      toast.success(newVal ? 'Saved!' : 'Removed from saved');
+      if (!newVal && onUnsaved) onUnsaved(post.id);
+    } catch {
+      setBookmarked(!newVal);
+      toast.error('Failed to save');
+    }
+  };
 
-  const av     = mediaUrl(post.avatar);
-  const imgUrl = mediaUrl(post.image_url);
-  const init   = (post.username || 'U')[0].toUpperCase();
+  const postUrl  = `${window.location.origin}/${post.username}`;
+  const av       = mediaUrl(post.avatar);
+  const imgUrl   = mediaUrl(post.image_url);
+  const init     = (post.username || 'U')[0].toUpperCase();
   const avatarEl = av
     ? <img src={av} alt="" className="avatar avatar--32" />
     : <div className="avatar-ph avatar-ph--32">{init}</div>;
+
+  const closeSheet = () => { setSheet(null); setReportStep(null); };
 
   return (
     <div className="overlay overlay--dark" onClick={e => e.target === e.currentTarget && onClose()}>
@@ -306,36 +372,21 @@ function PostDetailModal({ post, currentUser, onClose, onDeleted, onUpdated }) {
           }
         </div>
         <div className="post-detail__side">
+          {/* Header with ··· sheet */}
           <div className="post-detail__hdr">
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               {avatarEl}
               <span className="font-semi" style={{ fontSize: 14 }}>{post.username}</span>
             </div>
-            <div style={{ position: 'relative' }}>
-              <button onClick={() => setShowDots(p => !p)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, padding: '2px 8px', letterSpacing: 2 }}>···</button>
-              {showDots && (
-                <>
-                  <div style={{ position: 'fixed', inset: 0, zIndex: 998 }} onClick={() => setShowDots(false)} />
-                  <div className="dropdown" style={{ right: 0, top: '100%', minWidth: 220, marginTop: 4 }}>
-                    {isOwn ? (
-                      <>
-                        <button className="dropdown__item" onClick={() => { setEditingCaption(true); setShowDots(false); }}>Edit caption</button>
-                        <div className="divider-lt" />
-                        <button className="dropdown__item dropdown__item--danger" onClick={deletePost}>Delete post</button>
-                        <div className="divider-lt" />
-                        <button className="dropdown__item" onClick={() => setShowDots(false)}>Cancel</button>
-                      </>
-                    ) : (
-                      <>
-                        <button className="dropdown__item dropdown__item--danger" onClick={() => { toast('Reported'); setShowDots(false); }}>Report</button>
-                        <div className="divider-lt" />
-                        <button className="dropdown__item" onClick={() => setShowDots(false)}>Cancel</button>
-                      </>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
+            <button
+              onClick={() => setSheet('menu')}
+              className="post-card__dots-btn"
+              aria-label="More options"
+            >
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                <circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>
+              </svg>
+            </button>
           </div>
 
           <div className="post-detail__scroll">
@@ -384,21 +435,29 @@ function PostDetailModal({ post, currentUser, onClose, onDeleted, onUpdated }) {
                     <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
                   </svg>
                 </button>
-                <button className="icon-btn"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></button>
-                <button className="icon-btn"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+                {/* Comment icon — focus the comment input */}
+                <button className="icon-btn" onClick={() => cmtInputRef.current?.focus()}>
+                  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                  </svg>
+                </button>
+                {/* Share icon — open share sheet */}
+                <button className="icon-btn" onClick={() => setSheet('share')}>
+                  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                  </svg>
+                </button>
               </div>
-              <button onClick={() => setBookmarked(p => !p)} className="icon-btn">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill={bookmarked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+              <button onClick={toggleSave} className="icon-btn">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill={bookmarked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
+                  <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
+                </svg>
               </button>
             </div>
             <button
               onClick={() => likesCount > 0 && setShowLikes(true)}
               className="font-bold"
-              style={{
-                fontSize: 14, marginBottom: 4, background: 'none', border: 'none',
-                padding: 0, cursor: likesCount > 0 ? 'pointer' : 'default',
-                color: 'var(--text-primary)',
-              }}
+              style={{ fontSize: 14, marginBottom: 4, background: 'none', border: 'none', padding: 0, cursor: likesCount > 0 ? 'pointer' : 'default', color: 'var(--text-primary)' }}
             >
               {likesCount.toLocaleString()} {likesCount === 1 ? 'like' : 'likes'}
             </button>
@@ -409,19 +468,166 @@ function PostDetailModal({ post, currentUser, onClose, onDeleted, onUpdated }) {
             <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#8e8e8e" strokeWidth="1.5" style={{ flexShrink: 0 }}>
               <circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/>
             </svg>
-            <input value={commentText} onChange={e => setCommentText(e.target.value)} placeholder="Add a comment..."
-              style={{ flex: 1, border: 'none', outline: 'none', fontSize: 14 }} />
+            <input ref={cmtInputRef} value={commentText} onChange={e => setCommentText(e.target.value)}
+              placeholder="Add a comment..." style={{ flex: 1, border: 'none', outline: 'none', fontSize: 14 }} />
             {commentText && <button type="submit" className="btn btn--accent font-bold" style={{ fontSize: 14, flexShrink: 0 }}>Post</button>}
           </form>
         </div>
       </div>
-      {showLikes && (
-        <LikesModal
-          postId={post.id}
-          currentUser={currentUser}
-          onClose={() => setShowLikes(false)}
-        />
+
+      {/* ── Sheet modals ── */}
+      {sheet === 'menu' && (
+        <DetailPostSheet onClose={closeSheet}>
+          {isOwn ? (
+            <>
+              <DetailSheetBtn danger onClick={deletePost}>Delete</DetailSheetBtn>
+              <DetailSheetBtn onClick={() => { setEditingCaption(true); closeSheet(); }}>Edit caption</DetailSheetBtn>
+              <DetailSheetBtn onClick={() => { navigator.clipboard.writeText(postUrl); toast.success('Link copied!'); closeSheet(); }}>Copy link</DetailSheetBtn>
+              <DetailSheetBtn bold onClick={closeSheet}>Cancel</DetailSheetBtn>
+            </>
+          ) : (
+            <>
+              <DetailSheetBtn danger onClick={() => { setReportStep(null); setSheet('report'); }}>Report</DetailSheetBtn>
+              <DetailSheetBtn onClick={() => { navigator.clipboard.writeText(postUrl); toast.success('Link copied!'); closeSheet(); }}>Copy link</DetailSheetBtn>
+              <DetailSheetBtn onClick={() => { closeSheet(); navigate(`/${post.username}`); }}>About this account</DetailSheetBtn>
+              <DetailSheetBtn bold onClick={closeSheet}>Cancel</DetailSheetBtn>
+            </>
+          )}
+        </DetailPostSheet>
       )}
+
+      {sheet === 'report' && (
+        <DetailPostSheet onClose={closeSheet} title={reportStep ? 'Report submitted' : 'Why are you reporting this?'}>
+          {!reportStep ? (
+            <>
+              {["It's spam","Nudity or sexual activity","Hate speech or symbols","Violence or dangerous organisations","Bullying or harassment","False information","I just don't like it"].map(r => (
+                <DetailSheetBtn key={r} align="left" chevron onClick={() => setReportStep(r)}>{r}</DetailSheetBtn>
+              ))}
+              <DetailSheetBtn bold onClick={closeSheet}>Cancel</DetailSheetBtn>
+            </>
+          ) : (
+            <>
+              <div className="sheet-report-confirm">
+                <div className="sheet-report-confirm__icon">
+                  <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="var(--text-primary)" strokeWidth="1.5">
+                    <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                </div>
+                <h3 className="sheet-report-confirm__title">Thanks for letting us know</h3>
+                <p className="sheet-report-confirm__body">Your report for <strong>{reportStep}</strong> has been submitted.</p>
+              </div>
+              <DetailSheetBtn onClick={closeSheet}>Done</DetailSheetBtn>
+            </>
+          )}
+        </DetailPostSheet>
+      )}
+
+      {sheet === 'share' && (
+        <DetailPostSheet onClose={closeSheet} title="Share">
+          <DetailShareSheet post={post} postUrl={postUrl} currentUser={currentUser} onClose={closeSheet} />
+        </DetailPostSheet>
+      )}
+
+      {showLikes && (
+        <LikesModal postId={post.id} currentUser={currentUser} onClose={() => setShowLikes(false)} />
+      )}
+    </div>
+  );
+}
+
+// ── EDIT PROFILE MODAL ────────────────────────────────────────
+// ── DETAIL SHEET HELPERS (used by PostDetailModal) ────────────
+function DetailPostSheet({ children, onClose, title }) {
+  return (
+    <div className="ig-sheet-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="ig-sheet">
+        {title && <div className="ig-sheet__title">{title}</div>}
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function DetailSheetBtn({ children, onClick, danger, bold, align = 'center', chevron }) {
+  return (
+    <button
+      onClick={onClick}
+      className={['ig-sheet__btn', danger ? 'ig-sheet__btn--danger' : '', bold ? 'ig-sheet__btn--bold' : ''].filter(Boolean).join(' ')}
+      style={{ textAlign: align }}
+    >
+      <span style={{ flex: 1 }}>{children}</span>
+      {chevron && <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--text-muted)" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>}
+    </button>
+  );
+}
+
+function DetailShareSheet({ post, postUrl, currentUser, onClose }) {
+  const [query, setQuery]     = useState('');
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent]       = useState({});
+  const debounce              = useRef();
+
+  useEffect(() => {
+    axios.get('/api/users/suggestions').then(r => setResults(r.data)).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    clearTimeout(debounce.current);
+    if (!query.trim()) { axios.get('/api/users/suggestions').then(r => setResults(r.data)).catch(() => {}); return; }
+    setLoading(true);
+    debounce.current = setTimeout(async () => {
+      try { const { data } = await axios.get(`/api/users/search?q=${encodeURIComponent(query)}`); setResults(data); }
+      catch { setResults([]); }
+      finally { setLoading(false); }
+    }, 300);
+    return () => clearTimeout(debounce.current);
+  }, [query]);
+
+  const sendTo = async (userId, username) => {
+    if (sent[userId]) return;
+    const payload = JSON.stringify({ type: 'post_share', post_id: post.id, image_url: post.image_url || null, caption: post.caption || '', username: post.username });
+    try { await axios.post(`/api/messages/${userId}`, { text: payload }); setSent(s => ({ ...s, [userId]: true })); toast.success(`Sent to ${username}!`); }
+    catch { toast.error('Failed to send'); }
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', maxHeight: '60vh' }}>
+      <div style={{ padding: '8px 16px 12px' }}>
+        <div className="search-box" style={{ background: 'var(--border-light)' }}>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#8e8e8e" strokeWidth="2" style={{ flexShrink: 0 }}><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search" className="search-box__input" autoFocus />
+        </div>
+      </div>
+      <div onClick={() => { navigator.clipboard.writeText(postUrl).then(() => toast.success('Link copied!')); onClose(); }} className="ig-share-copy-row">
+        <div className="ig-share-copy-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--text-primary)" strokeWidth="2">
+            <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
+          </svg>
+        </div>
+        <span style={{ fontSize: 14, fontWeight: 600 }}>Copy link</span>
+      </div>
+      <div style={{ flex: 1, overflowY: 'auto' }}>
+        {loading && <div style={{ padding: 20, textAlign: 'center' }} className="text-muted">Searching…</div>}
+        {!loading && results.filter(u => u.id !== currentUser?.id).map(u => {
+          const uAv  = mediaUrl(u.avatar); const uInit = (u.username || 'U')[0].toUpperCase(); const wasSent = !!sent[u.id];
+          return (
+            <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px' }}>
+              <div style={{ flexShrink: 0 }}>{uAv ? <img src={uAv} alt="" className="avatar avatar--44" /> : <div className="avatar-ph avatar-ph--44">{uInit}</div>}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="truncate font-semi" style={{ fontSize: 14 }}>{u.username}</div>
+                {u.full_name && <div className="truncate text-muted" style={{ fontSize: 13 }}>{u.full_name}</div>}
+              </div>
+              <button onClick={() => sendTo(u.id, u.username)} className={wasSent ? 'btn btn--secondary' : 'btn btn--primary'} style={{ flexShrink: 0, fontSize: 13, padding: '6px 18px' }} disabled={wasSent}>
+                {wasSent ? 'Sent' : 'Send'}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ padding: '8px 16px 4px', borderTop: '1px solid var(--border-light)' }}>
+        <DetailSheetBtn bold onClick={onClose}>Cancel</DetailSheetBtn>
+      </div>
     </div>
   );
 }
