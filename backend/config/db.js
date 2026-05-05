@@ -27,10 +27,10 @@ function emitToUser(userId, event, payload) {
 
 async function connectDB() {
   db = await mysql.createPool({
-    host:               process.env.DB_HOST     || 'localhost',
-    user:               process.env.DB_USER     || 'root',
-    password:           process.env.DB_PASSWORD,
-    database:           process.env.DB_NAME     || 'instagram_clone',
+    host:     process.env.MYSQLHOST,
+    user:     process.env.MYSQLUSER,
+    password: process.env.MYSQLPASSWORD,
+    database: process.env.MYSQLDATABASE,
     waitForConnections: true,
     connectionLimit:    10,
   });
