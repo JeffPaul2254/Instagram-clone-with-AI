@@ -145,3 +145,4 @@ instagram-clone/
 - **Frontend**: React 18, React Router v6, Axios, react-hot-toast
 - **Backend**: Node.js, Express, MySQL2, bcryptjs, jsonwebtoken, multer
 - **Database**: MySQL with 5 tables: users, posts, likes, comments, follows
+- BY Jeffrey Paulouse
