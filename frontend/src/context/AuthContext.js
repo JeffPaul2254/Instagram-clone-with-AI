@@ -1,33 +1,18 @@
 /**
- * AuthContext.js
+ * context/AuthContext.js
  *
- * CHANGES from v1:
- *  • Replaced the global axios.defaults.headers mutation with an axios
- *    request interceptor that reads the token from localStorage on every
- *    call. This is safer: the old approach set a global header that persisted
- *    even after logout until the next page load. The interceptor always reads
- *    the live value, so logout is instant and consistent across tabs.
- *
- *  • token is now exposed on the context object so components like
- *    useSocket can read it without touching localStorage directly.
+ * CHANGES:
+ *  • Imports the shared axios instance from utils/axios instead of the raw
+ *    axios package. That instance has baseURL set to REACT_APP_API_URL, so
+ *    all API calls target Railway (not the Vercel frontend).
+ *  • Removed the duplicate axios.interceptors.request — the interceptor now
+ *    lives in utils/axios.js alongside the baseURL config.
  */
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../utils/axios';   // ← shared instance with baseURL + auth interceptor
 
 const AuthContext = createContext();
-
-// ── Axios request interceptor ────────────────────────────────
-// Attaches the JWT to every outgoing axios request automatically.
-// Reading from localStorage each time means the token is always current —
-// no stale header if the user logs out in another tab.
-axios.interceptors.request.use((config) => {
-  const token = localStorage.getItem('ig_token');
-  if (token) {
-    config.headers['Authorization'] = `Bearer ${token}`;
-  }
-  return config;
-});
 
 export function AuthProvider({ children }) {
   const [user, setUser]       = useState(null);

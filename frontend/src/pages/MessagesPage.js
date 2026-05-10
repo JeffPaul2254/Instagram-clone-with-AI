@@ -16,7 +16,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../utils/axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { timeAgo, fullTime, mediaUrl } from '../utils/helpers';

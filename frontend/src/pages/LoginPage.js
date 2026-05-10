@@ -1,8 +1,19 @@
+/**
+ * pages/LoginPage.js
+ *
+ * CHANGES:
+ *  • Uses shared axios instance (baseURL → Railway backend).
+ *  • Toast error now safely stringifies the response to avoid React error #31
+ *    ("Objects are not valid as a React child"). If the server returns an
+ *    object instead of a plain string, we extract .error, .message, or
+ *    fall back to a generic string — never passing an object to toast.error().
+ */
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import axios from '../utils/axios';   // ← shared instance
 
 export default function LoginPage() {
   const { login }  = useAuth();
@@ -19,7 +30,13 @@ export default function LoginPage() {
       login(data.token, data.user);
       toast.success(`Welcome back, ${data.user.username}!`);
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Login failed');
+      // Safely extract a string — never pass an object to toast.error()
+      const errData = err.response?.data;
+      const message =
+        typeof errData === 'string'
+          ? errData
+          : errData?.error || errData?.message || 'Login failed';
+      toast.error(String(message));
     } finally { setLoading(false); }
   };
 
@@ -50,7 +67,7 @@ export default function LoginPage() {
             </svg>
             <span>Log in with Facebook</span>
           </button>
-          <button className="auth-card__forgot">Forgot password?</button>
+          <button className="auth-card__fb-btn auth-card__forgot">Forgot password?</button>
         </div>
 
         <div className="auth-login-card">

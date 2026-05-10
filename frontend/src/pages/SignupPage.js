@@ -1,8 +1,16 @@
+/**
+ * pages/SignupPage.js
+ *
+ * CHANGES:
+ *  • Uses shared axios instance (baseURL → Railway backend).
+ *  • Toast error safely stringified (same fix as LoginPage).
+ */
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import axios from '../utils/axios';   // ← shared instance
 
 export default function SignupPage() {
   const { login }  = useAuth();
@@ -20,7 +28,12 @@ export default function SignupPage() {
       login(data.token, data.user);
       toast.success('Account created! Welcome to Instagram Clone 🎉');
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Signup failed');
+      const errData = err.response?.data;
+      const message =
+        typeof errData === 'string'
+          ? errData
+          : errData?.error || errData?.message || 'Signup failed';
+      toast.error(String(message));
     } finally { setLoading(false); }
   };
 

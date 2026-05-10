@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../utils/axios';
 import { mediaUrl } from '../utils/helpers';
 
 export default function SearchPanel({ onClose }) {
