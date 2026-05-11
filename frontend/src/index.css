@@ -1292,17 +1292,19 @@ input, textarea { font-family: inherit; }
   width: 440px;
   height: 500px;
   flex-shrink: 0;
+  background: none;
 }
 
-/* The single hero image — fills the container, rounded like a phone card */
+/* Hero image — no white box, no card, just the image */
 .auth-collage__hero {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center top;
-  border-radius: 18px;
+  border-radius: 0;
   display: block;
-  box-shadow: 0 12px 40px rgba(0,0,0,.22);
+  background: none;
+  box-shadow: none;
 }
 
 /* Floating stickers — positions unchanged */

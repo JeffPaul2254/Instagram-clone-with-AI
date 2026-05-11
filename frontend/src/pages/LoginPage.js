@@ -110,11 +110,6 @@ export default function LoginPage() {
               className="auth-collage__hero"
               onError={fallback('linear-gradient(160deg,#f77737,#e1306c)')}
             />
-            <div className="auth-sticker auth-sticker--emoji">
-              <span>🐻</span><span>🐱</span><span>😍</span><span>💫</span>
-            </div>
-            <div className="auth-sticker auth-sticker--heart">❤️</div>
-            <div className="auth-sticker auth-sticker--badge">⭐ Close Friends</div>
           </div>
         </div>
 
