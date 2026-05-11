@@ -100,7 +100,8 @@ export default function LoginPage() {
         {/* LEFT: headline + collage */}
         <div className="auth-left">
           <h1 className="auth-headline">
-            See everyday moments from your<br /><span className="auth-orange">close friends</span>.
+            <span className="auth-headline__line1">See everyday moments from your</span>
+            <span className="auth-orange">close friends</span>.
           </h1>
 
           <div className="auth-collage">
