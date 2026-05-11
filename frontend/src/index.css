@@ -65,7 +65,7 @@
 }
 
 /* ── BASE ───────────────────────────────────────────────────── */
-body { font-family: var(--font); background: var(--bg); color: var(--text-primary); min-height: 100vh; }
+body { font-family: var(--font); background: var(--bg); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; }
 a { text-decoration: none; color: inherit; }
 button { cursor: pointer; border: none; background: none; font-family: inherit; }
 input, textarea { font-family: inherit; }
@@ -387,7 +387,7 @@ input, textarea { font-family: inherit; }
 .reel-upload__edit   { display: flex; overflow: hidden; max-height: calc(90vh - 60px); }
 
 /* ── AUTH PAGES ─────────────────────────────────────────────── */
-.auth-page             { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: var(--bg); gap: 32px; padding: 20px; }
+.auth-page             { display: flex; flex-direction: column; min-height: 100vh; background: var(--bg); gap: 0; padding: 0; position: relative; }
 .auth-page--col        { flex-direction: column; }
 .auth-card             { background: var(--surface); border: 1px solid var(--border); border-radius: 1px; padding: 40px 40px 24px; text-align: center; }
 .auth-card--login      { width: 100%; max-width: 350px; margin-bottom: 10px; }
@@ -1228,3 +1228,450 @@ input, textarea { font-family: inherit; }
   transition: opacity var(--trans-fast);
 }
 .cmt-like-btn:hover { opacity: 1; }
+/* ═══════════════════════════════════════════════════════════════
+   AUTH — NEW SPLIT-SCREEN LOGIN (LoginPage redesign)
+   These classes are used by LoginPage.js (new design).
+   The old .auth-card / .auth-login-card rules above are kept
+   for SignupPage and any other existing page that references them.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Top-left IG icon bar ── */
+.auth-topbar {
+  position: absolute;
+  top: 20px;
+  left: 24px;
+  z-index: 10;
+}
+.auth-topbar__icon {
+  width: 44px;
+  height: 44px;
+  display: block;
+}
+
+/* ── Outer page wrapper (already set above, this extends it) ── */
+
+/* ── Middle area (left collage + divider + right form) ── */
+.auth-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 100vw;
+  min-height: calc(100vh - 120px);
+  overflow: hidden;
+}
+
+/* ── LEFT column ── */
+.auth-left {
+  width: 460px;
+  max-width: 460px;
+  flex-shrink: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 28px;
+  padding: 40px 24px 40px 32px;
+}
+
+.auth-headline {
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1.35;
+  color: var(--text-primary);
+  letter-spacing: -.2px;
+  max-width: 380px;
+  word-break: normal;
+}
+.auth-orange { color: #e8721c; }
+
+/* ── Collage card stack ── */
+.auth-collage {
+  position: relative;
+  width: 340px;
+  height: 340px;
+  flex-shrink: 0;
+}
+
+.auth-collage__card {
+  position: absolute;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,.18);
+}
+.auth-collage__card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Three layered cards */
+.auth-collage__card--back {
+  width: 190px;
+  height: 250px;
+  top: 30px;
+  left: 0;
+  transform: rotate(-6deg);
+  z-index: 1;
+  opacity: .85;
+}
+.auth-collage__card--mid {
+  width: 210px;
+  height: 280px;
+  top: 20px;
+  left: 70px;
+  z-index: 3;
+  transform: rotate(0deg);
+}
+.auth-collage__card--front {
+  width: 175px;
+  height: 240px;
+  top: 45px;
+  right: 0;
+  transform: rotate(5deg);
+  z-index: 2;
+  opacity: .85;
+}
+
+/* Story-style overlay on the mid card */
+.auth-collage__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 8px 10px;
+  pointer-events: none;
+}
+.auth-collage__progress {
+  height: 3px;
+  background: rgba(255,255,255,.4);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.auth-collage__progress-fill {
+  width: 60%;
+  height: 100%;
+  background: #fff;
+  border-radius: 2px;
+}
+.auth-collage__heart-row {
+  display: flex;
+  justify-content: flex-end;
+  padding-bottom: 4px;
+}
+
+/* Floating stickers */
+.auth-sticker {
+  position: absolute;
+  z-index: 5;
+  font-size: 13px;
+  font-weight: 700;
+}
+.auth-sticker--emoji {
+  top: 10px;
+  left: 60px;
+  display: flex;
+  gap: 3px;
+  background: rgba(255,255,255,.92);
+  border-radius: 20px;
+  padding: 4px 8px;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.12);
+}
+.auth-sticker--heart {
+  bottom: 80px;
+  left: 20px;
+  font-size: 28px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.2));
+}
+.auth-sticker--badge {
+  bottom: 40px;
+  right: 10px;
+  background: #00c853;
+  color: #fff;
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0,0,0,.18);
+  white-space: nowrap;
+}
+
+/* ── Vertical divider between columns ── */
+.auth-col-divider {
+  width: 1px;
+  align-self: stretch;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+/* ── RIGHT column (form) ── */
+.auth-right {
+  width: 400px;
+  max-width: 400px;
+  flex-shrink: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  gap: 0;
+}
+
+.auth-right__title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+  display: block;
+  width: 100%;
+  max-width: 350px;
+  text-align: left;
+}
+
+/* Form and all its siblings share the same width */
+.auth-right form,
+.auth-forgot,
+.auth-form-gap,
+.auth-fb-btn,
+.auth-create-btn,
+.auth-meta {
+  width: 100%;
+  max-width: 350px;
+}
+
+/* ── Form inputs ── */
+.auth-input {
+  width: 100%;
+  padding: 13px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text-primary);
+  outline: none;
+  margin-bottom: 8px;
+  transition: border-color var(--trans-fast);
+}
+.auth-input:focus {
+  border-color: #0866ff;
+  outline: none;
+}
+.auth-input::placeholder {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* Password wrapper (input + show/hide toggle) */
+.auth-pw-wrap {
+  position: relative;
+  width: 100%;
+  margin-bottom: 6px;
+}
+.auth-pw-wrap .auth-input {
+  margin-bottom: 0;
+  padding-right: 52px;
+}
+.auth-pw-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+}
+
+/* ── Log in button ── */
+.auth-login-btn {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+  margin-top: 8px;
+  background: #0866ff;
+  color: #fff;
+  transition: opacity var(--trans-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+}
+.auth-login-btn:disabled {
+  background: #9dc4fb;
+  cursor: default;
+  opacity: 1;
+}
+
+/* Button spinner */
+.auth-btn-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+
+/* ── Forgot password ── */
+.auth-forgot {
+  font-size: 13px;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  margin-top: 12px;
+  padding: 0;
+  display: block;
+  text-align: center;
+}
+.auth-forgot:hover { text-decoration: underline; }
+
+/* Gap between forgot and FB button */
+.auth-form-gap { height: 28px; display: block; }
+
+/* ── Facebook button ── */
+.auth-fb-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #385185;
+  background: var(--surface);
+  cursor: pointer;
+  transition: background var(--trans-fast);
+  text-decoration: none;
+  margin-bottom: 10px;
+}
+.auth-fb-btn:hover { background: var(--bg); }
+
+/* ── Create account button ── */
+.auth-create-btn {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 12px 16px;
+  border: 1px solid #0866ff;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #0866ff;
+  background: transparent;
+  cursor: pointer;
+  text-decoration: none;
+  font-family: inherit;
+  transition: background var(--trans-fast);
+  margin-bottom: 20px;
+}
+.auth-create-btn:hover { background: rgba(8,102,255,.05); }
+
+/* ── Meta wordmark ── */
+.auth-meta {
+  display: block;
+  margin: 0 auto;
+}
+
+/* ── Footer ── */
+.auth-footer {
+  padding: 20px 40px;
+  border-top: 1px solid var(--border-light);
+}
+.auth-footer__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 12px;
+  margin-bottom: 12px;
+}
+.auth-footer__links span {
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.auth-footer__links span:hover { text-decoration: underline; }
+.auth-footer__copy {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ── Responsive ── */
+
+/* Scale down the collage at mid-range widths before full collapse */
+@media (max-width: 1080px) and (min-width: 936px) {
+  .auth-left {
+    width: 380px;
+    max-width: 380px;
+    padding: 40px 16px 40px 20px;
+  }
+  .auth-collage {
+    width: 280px;
+    height: 280px;
+  }
+  .auth-collage__card--back  { width: 158px; height: 210px; }
+  .auth-collage__card--mid   { width: 175px; height: 235px; }
+  .auth-collage__card--front { width: 145px; height: 200px; }
+  .auth-headline { font-size: 24px; max-width: 300px; }
+  .auth-right {
+    width: 360px;
+    max-width: 360px;
+    padding: 40px 16px;
+  }
+}
+
+@media (max-width: 935px) {
+  .auth-left       { display: none; }
+  .auth-col-divider { display: none; }
+  .auth-right {
+    width: 100%;
+    max-width: 420px;
+    padding: 60px 24px;
+  }
+  .auth-right form,
+  .auth-right__title,
+  .auth-forgot,
+  .auth-form-gap,
+  .auth-fb-btn,
+  .auth-create-btn,
+  .auth-meta {
+    width: 100%;
+    max-width: 370px;
+  }
+  .auth-right__title { text-align: center; }
+}
+
+@media (max-width: 480px) {
+  .auth-right { padding: 40px 20px; }
+  .auth-right form,
+  .auth-right__title,
+  .auth-forgot,
+  .auth-form-gap,
+  .auth-fb-btn,
+  .auth-create-btn,
+  .auth-meta {
+    width: 100%;
+    max-width: 100%;
+  }
+}
