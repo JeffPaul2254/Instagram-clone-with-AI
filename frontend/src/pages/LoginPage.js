@@ -50,14 +50,6 @@ function MetaWordmark() {
   );
 }
 
-function HeartOutline() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8">
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-    </svg>
-  );
-}
-
 const FOOTER_LINKS = [
   'Meta','About','Blog','Jobs','Help','API','Privacy','Terms',
   'Locations','Popular','Instagram Lite','Meta AI','Threads',
@@ -112,32 +104,12 @@ export default function LoginPage() {
           </h1>
 
           <div className="auth-collage">
-            <div className="auth-collage__card auth-collage__card--back">
-              <img src={IMG} alt=""
-                style={{ objectPosition: 'left top' }}
-                onError={fallback('linear-gradient(160deg,#833ab4,#fd1d1d,#fcb045)')} />
-            </div>
-
-            <div className="auth-collage__card auth-collage__card--mid">
-              <img src={IMG} alt="Instagram stories preview"
-                style={{ objectPosition: 'center top' }}
-                onError={fallback('linear-gradient(160deg,#f77737,#e1306c)')} />
-              <div className="auth-collage__overlay">
-                <div className="auth-collage__progress">
-                  <div className="auth-collage__progress-fill" />
-                </div>
-                <div className="auth-collage__heart-row">
-                  <HeartOutline />
-                </div>
-              </div>
-            </div>
-
-            <div className="auth-collage__card auth-collage__card--front">
-              <img src={IMG} alt=""
-                style={{ objectPosition: 'right top' }}
-                onError={fallback('linear-gradient(160deg,#405de6,#5851db,#833ab4)')} />
-            </div>
-
+            <img
+              src={IMG}
+              alt="Instagram stories preview"
+              className="auth-collage__hero"
+              onError={fallback('linear-gradient(160deg,#f77737,#e1306c)')}
+            />
             <div className="auth-sticker auth-sticker--emoji">
               <span>🐻</span><span>🐱</span><span>😍</span><span>💫</span>
             </div>

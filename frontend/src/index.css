@@ -1286,90 +1286,26 @@ input, textarea { font-family: inherit; }
 }
 .auth-orange { color: #e8721c; }
 
-/* ── Collage card stack ── */
+/* ── Collage — single hero image with floating stickers ── */
 .auth-collage {
   position: relative;
   width: 380px;
-  height: 400px;
+  height: 420px;
   flex-shrink: 0;
 }
 
-.auth-collage__card {
-  position: absolute;
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow: 0 8px 28px rgba(0,0,0,.22);
-}
-.auth-collage__card img {
+/* The single hero image — fills the container, rounded like a phone card */
+.auth-collage__hero {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center center;
+  object-position: center top;
+  border-radius: 18px;
   display: block;
+  box-shadow: 0 12px 40px rgba(0,0,0,.22);
 }
 
-/* Three layered cards — sizes/positions match real IG collage proportions */
-.auth-collage__card--back {
-  width: 195px;
-  height: 260px;
-  top: 40px;
-  left: 0;
-  transform: rotate(-7deg);
-  z-index: 1;
-  opacity: .9;
-}
-.auth-collage__card--back img  { object-position: left center; }
-
-.auth-collage__card--mid {
-  width: 220px;
-  height: 300px;
-  top: 24px;
-  left: 80px;
-  z-index: 3;
-  transform: rotate(0deg);
-}
-.auth-collage__card--mid img   { object-position: center top; }
-
-.auth-collage__card--front {
-  width: 185px;
-  height: 255px;
-  top: 55px;
-  right: 0;
-  transform: rotate(6deg);
-  z-index: 2;
-  opacity: .9;
-}
-.auth-collage__card--front img { object-position: right center; }
-
-/* Story-style overlay on the mid card */
-.auth-collage__overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 8px 10px;
-  pointer-events: none;
-}
-.auth-collage__progress {
-  height: 3px;
-  background: rgba(255,255,255,.4);
-  border-radius: 2px;
-  overflow: hidden;
-}
-.auth-collage__progress-fill {
-  width: 60%;
-  height: 100%;
-  background: #fff;
-  border-radius: 2px;
-}
-.auth-collage__heart-row {
-  display: flex;
-  justify-content: flex-end;
-  padding-bottom: 4px;
-}
-
-/* Floating stickers */
+/* Floating stickers — positions unchanged */
 .auth-sticker {
   position: absolute;
   z-index: 5;
@@ -1632,11 +1568,8 @@ input, textarea { font-family: inherit; }
   }
   .auth-collage {
     width: 300px;
-    height: 330px;
+    height: 340px;
   }
-  .auth-collage__card--back  { width: 162px; height: 220px; }
-  .auth-collage__card--mid   { width: 182px; height: 252px; }
-  .auth-collage__card--front { width: 152px; height: 214px; }
   .auth-headline { font-size: 22px; max-width: 280px; }
   .auth-right {
     width: 420px;
