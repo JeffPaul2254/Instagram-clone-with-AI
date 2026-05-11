@@ -1254,43 +1254,43 @@ input, textarea { font-family: inherit; }
 .auth-main {
   flex: 1;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
   width: 100%;
   max-width: 100vw;
-  min-height: calc(100vh - 120px);
+  min-height: calc(100vh - 80px);
   overflow: hidden;
 }
 
 /* ── LEFT column ── */
 .auth-left {
-  width: 460px;
-  max-width: 460px;
-  flex-shrink: 1;
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  gap: 28px;
-  padding: 40px 24px 40px 32px;
+  gap: 32px;
+  padding: 40px 48px 40px 40px;
 }
 
 .auth-headline {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 400;
   line-height: 1.35;
   color: var(--text-primary);
   letter-spacing: -.2px;
-  max-width: 380px;
+  max-width: 360px;
   word-break: normal;
+  text-align: center;
 }
 .auth-orange { color: #e8721c; }
 
 /* ── Collage card stack ── */
 .auth-collage {
   position: relative;
-  width: 340px;
-  height: 340px;
+  width: 380px;
+  height: 400px;
   flex-shrink: 0;
 }
 
@@ -1298,42 +1298,48 @@ input, textarea { font-family: inherit; }
   position: absolute;
   border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0,0,0,.18);
+  box-shadow: 0 8px 28px rgba(0,0,0,.22);
 }
 .auth-collage__card img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center center;
   display: block;
 }
 
-/* Three layered cards */
+/* Three layered cards — sizes/positions match real IG collage proportions */
 .auth-collage__card--back {
-  width: 190px;
-  height: 250px;
-  top: 30px;
+  width: 195px;
+  height: 260px;
+  top: 40px;
   left: 0;
-  transform: rotate(-6deg);
+  transform: rotate(-7deg);
   z-index: 1;
-  opacity: .85;
+  opacity: .9;
 }
+.auth-collage__card--back img  { object-position: left center; }
+
 .auth-collage__card--mid {
-  width: 210px;
-  height: 280px;
-  top: 20px;
-  left: 70px;
+  width: 220px;
+  height: 300px;
+  top: 24px;
+  left: 80px;
   z-index: 3;
   transform: rotate(0deg);
 }
+.auth-collage__card--mid img   { object-position: center top; }
+
 .auth-collage__card--front {
-  width: 175px;
-  height: 240px;
-  top: 45px;
+  width: 185px;
+  height: 255px;
+  top: 55px;
   right: 0;
-  transform: rotate(5deg);
+  transform: rotate(6deg);
   z-index: 2;
-  opacity: .85;
+  opacity: .9;
 }
+.auth-collage__card--front img { object-position: right center; }
 
 /* Story-style overlay on the mid card */
 .auth-collage__overlay {
@@ -1408,16 +1414,16 @@ input, textarea { font-family: inherit; }
   flex-shrink: 0;
 }
 
-/* ── RIGHT column (form) ── */
+/* ── RIGHT column (form) — matches real Instagram ~460px panel ── */
 .auth-right {
-  width: 450px;
-  max-width: 450px;
-  flex-shrink: 1;
+  width: 500px;
+  max-width: 500px;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 36px;
+  padding: 40px 40px;
   gap: 0;
 }
 
@@ -1428,7 +1434,7 @@ input, textarea { font-family: inherit; }
   margin-bottom: 20px;
   display: block;
   width: 100%;
-  max-width: 378px;
+  max-width: 420px;
   text-align: left;
 }
 
@@ -1440,7 +1446,7 @@ input, textarea { font-family: inherit; }
 .auth-create-btn,
 .auth-meta {
   width: 100%;
-  max-width: 378px;
+  max-width: 420px;
 }
 
 /* ── Form inputs ── */
@@ -1619,25 +1625,23 @@ input, textarea { font-family: inherit; }
 
 /* ── Responsive ── */
 
-/* Scale down the collage at mid-range widths before full collapse */
-@media (max-width: 1080px) and (min-width: 936px) {
+/* Scale down at mid-range widths before full collapse */
+@media (max-width: 1100px) and (min-width: 936px) {
   .auth-left {
-    width: 380px;
-    max-width: 380px;
-    padding: 40px 16px 40px 20px;
+    padding: 40px 24px 40px 24px;
   }
   .auth-collage {
-    width: 280px;
-    height: 280px;
+    width: 300px;
+    height: 330px;
   }
-  .auth-collage__card--back  { width: 158px; height: 210px; }
-  .auth-collage__card--mid   { width: 175px; height: 235px; }
-  .auth-collage__card--front { width: 145px; height: 200px; }
-  .auth-headline { font-size: 24px; max-width: 300px; }
+  .auth-collage__card--back  { width: 162px; height: 220px; }
+  .auth-collage__card--mid   { width: 182px; height: 252px; }
+  .auth-collage__card--front { width: 152px; height: 214px; }
+  .auth-headline { font-size: 22px; max-width: 280px; }
   .auth-right {
-    width: 380px;
-    max-width: 380px;
-    padding: 40px 20px;
+    width: 420px;
+    max-width: 420px;
+    padding: 40px 28px;
   }
 }
 
@@ -1646,7 +1650,7 @@ input, textarea { font-family: inherit; }
   .auth-col-divider { display: none; }
   .auth-right {
     width: 100%;
-    max-width: 420px;
+    max-width: 460px;
     padding: 60px 24px;
   }
   .auth-right form,
@@ -1657,7 +1661,7 @@ input, textarea { font-family: inherit; }
   .auth-create-btn,
   .auth-meta {
     width: 100%;
-    max-width: 370px;
+    max-width: 400px;
   }
   .auth-right__title { text-align: center; }
 }
