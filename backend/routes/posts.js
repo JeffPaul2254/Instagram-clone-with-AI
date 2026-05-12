@@ -1,10 +1,10 @@
 /**
  * routes/posts.js
  *
- * CHANGES from v1:
- *  • validateFileType middleware added after upload.single('image').
- *    It performs a magic-byte check on the saved file and rejects it
- *    (with automatic cleanup) if the bytes don't match an allowed type.
+ * IMPORTANT — route ordering:
+ *  Static/specific paths MUST come before dynamic /:id routes.
+ *  POST /comments/:commentId/like must be declared before POST /:id/comments,
+ *  otherwise Express would attempt to match "comments" as a post :id.
  */
 
 const express        = require('express');
@@ -18,18 +18,23 @@ const {
   toggleSave, getSaved, toggleCommentLike,
 } = require('../controllers/postController');
 
-router.post('/',              authMiddleware, upload.single('image'), validateFileType, createPost);
-router.get('/feed',           authMiddleware, getFeed);
-router.get('/explore',        authMiddleware, getExplore);
-router.get('/saved',          authMiddleware, getSaved);
-router.get('/:id',            authMiddleware, getPost);
-router.post('/:id/like',      authMiddleware, toggleLike);
-router.post('/:id/save',      authMiddleware, toggleSave);
-router.get('/:id/likes',      authMiddleware, getLikes);
-router.get('/:id/comments',   authMiddleware, getComments);
-router.post('/:id/comments',  authMiddleware, addComment);
+// ── Static routes first ───────────────────────────────────────
+router.post('/',                         authMiddleware, upload.single('image'), validateFileType, createPost);
+router.get('/feed',                      authMiddleware, getFeed);
+router.get('/explore',                   authMiddleware, getExplore);
+router.get('/saved',                     authMiddleware, getSaved);
+
+// ── Comment-like route BEFORE /:id to prevent "comments" matching as :id ──
 router.post('/comments/:commentId/like', authMiddleware, toggleCommentLike);
-router.delete('/:id',         authMiddleware, deletePost);
-router.put('/:id/caption',    authMiddleware, editCaption);
+
+// ── Dynamic /:id routes ───────────────────────────────────────
+router.get('/:id',                       authMiddleware, getPost);
+router.post('/:id/like',                 authMiddleware, toggleLike);
+router.post('/:id/save',                 authMiddleware, toggleSave);
+router.get('/:id/likes',                 authMiddleware, getLikes);
+router.get('/:id/comments',              authMiddleware, getComments);
+router.post('/:id/comments',             authMiddleware, addComment);
+router.delete('/:id',                    authMiddleware, deletePost);
+router.put('/:id/caption',               authMiddleware, editCaption);
 
 module.exports = router;

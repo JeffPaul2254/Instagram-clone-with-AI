@@ -7,10 +7,12 @@
  *
  * Features
  *  - Fetches the post by ID from GET /api/posts/:id
- *  - Like / unlike with optimistic update
+ *  - Like / unlike with optimistic update + rollback
  *  - Add comment, view all comments
- *  - Bookmark (local state — saved posts feature wires this up later)
- *  - Share via DM sheet (same ShareSheet pattern as PostCard)
+ *  - Comment likes — optimistic update + rollback, synced to
+ *      POST /api/posts/comments/:commentId/like (backend toggles + updates likes_count)
+ *  - Bookmark (save/unsave) wired to POST /api/posts/:id/save
+ *  - Share via DM sheet
  *  - Copy link
  *  - Follow / Unfollow the post author
  *  - Delete post (own posts only) → redirects to profile
@@ -87,6 +89,36 @@ export default function PostDetailPage() {
       setComments(p => [...p, data]);
       setCommentText('');
     } catch { toast.error('Failed to comment'); }
+  };
+
+  // ── Comment like ─────────────────────────────────────────────
+  // Optimistic: flip user_liked and adjust likes_count immediately.
+  // On API error: roll back both fields using the pre-update values.
+  const toggleCommentLike = async (commentId) => {
+    // Read current state before mutation so rollback has the original values
+    const target = comments.find(c => c.id === commentId);
+    if (!target) return;
+    const wasLiked    = target.user_liked > 0;
+    const prevCount   = Number(target.likes_count) || 0;
+    const newCount    = wasLiked ? Math.max(prevCount - 1, 0) : prevCount + 1;
+
+    // Apply optimistic update
+    setComments(prev => prev.map(c =>
+      c.id === commentId
+        ? { ...c, user_liked: wasLiked ? 0 : 1, likes_count: newCount }
+        : c
+    ));
+
+    try {
+      await axios.post(`/api/posts/comments/${commentId}/like`);
+    } catch {
+      // Roll back to exact pre-update values
+      setComments(prev => prev.map(c =>
+        c.id === commentId
+          ? { ...c, user_liked: wasLiked ? 1 : 0, likes_count: prevCount }
+          : c
+      ));
+    }
   };
 
   // ── Follow ──────────────────────────────────────────────────
@@ -253,6 +285,7 @@ export default function PostDetailPage() {
 
             {/* Scrollable comments + caption */}
             <div className="pdp-card__scroll">
+
               {/* Caption row */}
               {post.caption && (
                 <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
@@ -262,7 +295,7 @@ export default function PostDetailPage() {
                       : <div className="avatar-ph avatar-ph--32">{initials}</div>
                     }
                   </div>
-                  <div style={{ fontSize: 14, lineHeight: 1.5, paddingTop: 2 }}>
+                  <div style={{ fontSize: 14, lineHeight: 1.5, paddingTop: 2, flex: 1, minWidth: 0 }}>
                     <span
                       className="font-semi"
                       style={{ cursor: 'pointer' }}
@@ -278,27 +311,55 @@ export default function PostDetailPage() {
                 </div>
               )}
 
-              {/* Comments */}
+              {/* Empty state */}
               {comments.length === 0 && !post.caption && (
                 <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-secondary)', fontSize: 14 }}>
                   No comments yet. Be the first!
                 </div>
               )}
+
+              {/* Comments — each row has a like button synced to backend */}
               {comments.map(c => {
-                const ca   = mediaUrl(c.avatar);
-                const ci   = (c.username || 'U')[0].toUpperCase();
+                const ca        = mediaUrl(c.avatar);
+                const ci        = (c.username || 'U')[0].toUpperCase();
+                const cLiked    = c.user_liked > 0;
+                const cLikeCnt  = Number(c.likes_count) || 0;
                 return (
-                  <div key={c.id} style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
-                    {ca
-                      ? <img src={ca} alt="" className="avatar avatar--32" style={{ flexShrink: 0 }} />
-                      : <div className="avatar-ph avatar-ph--32" style={{ flexShrink: 0 }}>{ci}</div>
-                    }
-                    <div style={{ flex: 1, minWidth: 0 }}>
+                  <div key={c.id} className="post-card__cmt-row">
+                    <div style={{ flexShrink: 0 }}>
+                      {ca
+                        ? <img src={ca} alt="" className="avatar avatar--32" style={{ flexShrink: 0 }} />
+                        : <div className="avatar-ph avatar-ph--32" style={{ flexShrink: 0 }}>{ci}</div>
+                      }
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0, marginLeft: 10 }}>
                       <p style={{ fontSize: 14, lineHeight: 1.5, margin: 0 }}>
                         <strong>{c.username}</strong> {c.text}
                       </p>
                       <span className="text-muted" style={{ fontSize: 11 }}>{timeAgo(c.created_at)}</span>
                     </div>
+                    {/* Comment like button */}
+                    <button
+                      onClick={() => toggleCommentLike(c.id)}
+                      className="cmt-like-btn"
+                      aria-label="Like comment"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="12"
+                        height="12"
+                        fill={cLiked ? 'var(--danger)' : 'none'}
+                        stroke={cLiked ? 'var(--danger)' : 'var(--text-secondary)'}
+                        strokeWidth="2"
+                      >
+                        <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+                      </svg>
+                      {cLikeCnt > 0 && (
+                        <span style={{ fontSize: 11, color: 'var(--text-secondary)', marginLeft: 2 }}>
+                          {cLikeCnt}
+                        </span>
+                      )}
+                    </button>
                   </div>
                 );
               })}
