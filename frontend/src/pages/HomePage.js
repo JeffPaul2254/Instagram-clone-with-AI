@@ -64,9 +64,9 @@ function EmptyState() {
       <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="#dbdbdb" strokeWidth="1">
         <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
       </svg>
-      <h3 style={{ marginTop: 16, fontSize: 22, fontWeight: 600 }}>Welcome to Instagram</h3>
+      <h3 style={{ marginTop: 16, fontSize: 22, fontWeight: 600 }}>No posts yet</h3>
       <p className="text-muted" style={{ marginTop: 8, maxWidth: 300, lineHeight: 1.6 }}>
-        Your feed shows posts from people you follow. Follow some accounts to get started, or share your first post!
+        Be the first to share something! Once you or others post, it will appear here.
       </p>
     </div>
   );
