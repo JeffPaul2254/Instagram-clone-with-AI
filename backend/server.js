@@ -100,7 +100,9 @@ setIO(emitToUser);
 // ── Global middleware ──────────────────────────────────────────
 app.use(cors({ origin: FRONTEND_URL, credentials: true }));
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Serve uploads from the persistent directory (Railway Volume or local ./uploads)
+const { UPLOAD_DIR } = require('./config/db');
+app.use('/uploads', express.static(UPLOAD_DIR));
 
 // ── Rate limiting ──────────────────────────────────────────────
 app.use('/api/auth/login',  authLimiter);
