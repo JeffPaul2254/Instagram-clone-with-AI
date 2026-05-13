@@ -1609,3 +1609,342 @@ input, textarea { font-family: inherit; }
     max-width: 100%;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   SIGNUP PAGE  —  New multi-step Instagram-style signup
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Page shell ── */
+.su-page {
+  min-height: 100vh;
+  background: #fff;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 0 0 40px;
+}
+
+/* ── Card — plain white column, no card shadow (matches reference) ── */
+.su-card {
+  width: 100%;
+  max-width: 530px;
+  background: #fff;
+  overflow: hidden;
+}
+
+/* ── Topbar: back arrow left + Meta wordmark centre ── */
+.su-topbar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 16px 8px;
+}
+.su-back-btn {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-primary);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  border-radius: 50%;
+  transition: background .15s;
+}
+.su-back-btn:hover { background: var(--border-light); }
+
+/* ── Header text ── */
+.su-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 20px 0 6px;
+  line-height: 1.2;
+}
+
+.su-subtext {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0 0 20px;
+  line-height: 1.5;
+}
+
+/* ── OR divider (kept for potential reuse) ── */
+.su-divider { display: none; }
+
+/* ── Labelled field ── */
+.su-field { margin-bottom: 16px; }
+
+.su-field__label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.su-field__wrap {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  transition: border-color .15s;
+  overflow: hidden;
+}
+.su-field__wrap--focus { border-color: #3897f0; }
+.su-field__wrap--error { border-color: #ed4956; }
+
+.su-field__input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 14px 12px;
+  font-size: 15px;
+  font-family: inherit;
+  background: transparent;
+  color: var(--text-primary);
+}
+.su-field__input::placeholder { color: var(--text-secondary); }
+
+.su-field__error {
+  margin: 5px 0 0;
+  font-size: 13px;
+  color: #ed4956;
+  line-height: 1.4;
+}
+.su-field__hint {
+  margin: 5px 0 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Checkmark icon inside input */
+.su-field__ok {
+  flex-shrink: 0;
+  margin-right: 10px;
+}
+
+/* Show/hide password toggle */
+.su-pw-toggle {
+  flex-shrink: 0;
+  margin-right: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* ── Password strength ── */
+.su-pw-strength {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: -8px 0 14px;
+}
+.su-pw-strength__bars { display: flex; gap: 4px; flex: 1; }
+.su-pw-strength__bar {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+  transition: background .2s;
+}
+.su-pw-strength__bar--l1 { background: #ed4956; }
+.su-pw-strength__bar--l2 { background: #fd8d14; }
+.su-pw-strength__bar--l3 { background: #4caf50; }
+.su-pw-strength__bar--l4 { background: #2e7d32; }
+.su-pw-strength__label { font-size: 12px; font-weight: 600; min-width: 42px; text-align: right; }
+.su-pw-strength__label--l1 { color: #ed4956; }
+.su-pw-strength__label--l2 { color: #fd8d14; }
+.su-pw-strength__label--l3 { color: #4caf50; }
+.su-pw-strength__label--l4 { color: #2e7d32; }
+
+/* ── Notice below email ── */
+.su-notice {
+  margin: -8px 0 16px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ── Birthday dropdowns ── */
+.su-dob-row {
+  display: flex;
+  gap: 10px;
+}
+.su-select-wrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface);
+  transition: border-color .15s;
+}
+.su-select-wrap:focus-within { border-color: #3897f0; }
+.su-select {
+  flex: 1;
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  outline: none;
+  padding: 13px 32px 13px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.su-select-wrap svg {
+  position: absolute;
+  right: 8px;
+  pointer-events: none;
+  color: var(--text-secondary);
+}
+
+/* ── Help icon circle ── */
+.su-help-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--text-secondary);
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: help;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* ── Legal paragraphs ── */
+.su-legal {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0 0 10px;
+}
+.su-link {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: inherit;
+  font-family: inherit;
+  color: #3897f0;
+  font-weight: 600;
+}
+.su-link:hover { text-decoration: underline; }
+
+/* ── Submit button ── */
+.su-submit-btn {
+  width: 100%;
+  padding: 14px;
+  background: #0866ff;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  margin: 8px 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  transition: opacity .15s;
+}
+.su-submit-btn:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+.su-submit-btn:not(:disabled):hover { opacity: .92; }
+
+/* ── "I already have an account" link-button ── */
+.su-login-btn {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 13px;
+  border: 1.5px solid var(--border);
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-decoration: none;
+  margin-bottom: 24px;
+  transition: background .15s;
+}
+.su-login-btn:hover { background: var(--border-light); }
+
+/* ── Loading spinner inside button ── */
+.su-btn-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255,255,255,.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+
+/* ── Confirmation screen ── */
+.su-confirm-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #0866ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+.su-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--border);
+  border-top-color: #0866ff;
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+
+/* ── Footer ── */
+.su-footer {
+  padding: 20px 24px;
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+}
+.su-footer__link {
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.su-footer__link:hover { text-decoration: underline; }
+.su-footer__copy {
+  width: 100%;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 560px) {
+  .su-page { padding: 0; align-items: stretch; }
+  .su-card { min-height: 100vh; }
+  .su-dob-row { flex-direction: column; gap: 8px; }
+}
