@@ -1676,102 +1676,123 @@ input, textarea { font-family: inherit; }
 /* ── OR divider (kept for potential reuse) ── */
 .su-divider { display: none; }
 
-/* ── Labelled field ── */
-.su-field { margin-bottom: 16px; }
+/* ── Header text ── */
+.su-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #000;
+  margin: 16px 0 6px;
+  line-height: 1.2;
+}
 
+.su-subtext {
+  font-size: 14px;
+  color: #000;
+  margin: 0 0 20px;
+  line-height: 1.5;
+}
+
+/* ── Divider (hidden — kept for compat) ── */
+.su-divider { display: none; }
+
+/* ── Field wrapper ── */
+.su-field { margin-bottom: 12px; }
+
+/* Shared label above dropdowns / birthday */
 .su-field__label {
   display: block;
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #000;
   margin-bottom: 6px;
 }
 
-.su-field__wrap {
+/* ── Floating label input ── */
+.su-float-wrap {
+  position: relative;
+  border: 1.5px solid #dbdbdb;
+  border-radius: 10px;
+  background: #fff;
+  transition: border-color .15s;
   display: flex;
   align-items: center;
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  background: var(--surface);
-  transition: border-color .15s;
   overflow: hidden;
+  min-height: 52px;
 }
-.su-field__wrap--focus { border-color: #3897f0; }
-.su-field__wrap--error { border-color: #ed4956; }
+.su-float-wrap--focus { border-color: #3897f0; }
+.su-float-wrap--error { border-color: #ed4956; }
 
-.su-field__input {
+/* Floating placeholder label */
+.su-float-label {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 15px;
+  color: #8e8e8e;
+  pointer-events: none;
+  transition: top .15s, font-size .15s, color .15s;
+  line-height: 1;
+  white-space: nowrap;
+}
+/* Floated state — moves up, shrinks */
+.su-float-label--up {
+  top: 10px;
+  transform: none;
+  font-size: 11px;
+  color: #8e8e8e;
+}
+
+/* Actual input */
+.su-float-input {
   flex: 1;
   border: none;
   outline: none;
-  padding: 14px 12px;
+  padding: 22px 12px 8px;
   font-size: 15px;
   font-family: inherit;
   background: transparent;
-  color: var(--text-primary);
+  color: #000;
+  min-width: 0;
 }
-.su-field__input::placeholder { color: var(--text-secondary); }
 
+/* Error row with icon */
 .su-field__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
   margin: 5px 0 0;
   font-size: 13px;
   color: #ed4956;
   line-height: 1.4;
 }
+
 .su-field__hint {
   margin: 5px 0 0;
   font-size: 13px;
-  color: var(--text-secondary);
+  color: #8e8e8e;
 }
 
-/* Checkmark icon inside input */
-.su-field__ok {
+/* Eye button */
+.su-eye-btn {
   flex-shrink: 0;
   margin-right: 10px;
-}
-
-/* Show/hide password toggle */
-.su-pw-toggle {
-  flex-shrink: 0;
-  margin-right: 10px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-primary);
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0;
-}
-
-/* ── Password strength ── */
-.su-pw-strength {
+  padding: 4px;
+  color: #8e8e8e;
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin: -8px 0 14px;
+  transition: color .15s;
 }
-.su-pw-strength__bars { display: flex; gap: 4px; flex: 1; }
-.su-pw-strength__bar {
-  flex: 1;
-  height: 4px;
-  border-radius: 2px;
-  background: var(--border);
-  transition: background .2s;
-}
-.su-pw-strength__bar--l1 { background: #ed4956; }
-.su-pw-strength__bar--l2 { background: #fd8d14; }
-.su-pw-strength__bar--l3 { background: #4caf50; }
-.su-pw-strength__bar--l4 { background: #2e7d32; }
-.su-pw-strength__label { font-size: 12px; font-weight: 600; min-width: 42px; text-align: right; }
-.su-pw-strength__label--l1 { color: #ed4956; }
-.su-pw-strength__label--l2 { color: #fd8d14; }
-.su-pw-strength__label--l3 { color: #4caf50; }
-.su-pw-strength__label--l4 { color: #2e7d32; }
+.su-eye-btn:hover { color: #262626; }
 
 /* ── Notice below email ── */
 .su-notice {
-  margin: -8px 0 16px;
+  margin: -4px 0 16px;
   font-size: 13px;
-  color: var(--text-secondary);
+  color: #000;
   line-height: 1.5;
 }
 
@@ -1832,7 +1853,7 @@ input, textarea { font-family: inherit; }
 /* ── Legal paragraphs ── */
 .su-legal {
   font-size: 13px;
-  color: var(--text-secondary);
+  color: #000;
   line-height: 1.6;
   margin: 0 0 10px;
 }
@@ -1845,10 +1866,11 @@ input, textarea { font-family: inherit; }
   font-family: inherit;
   color: #3897f0;
   font-weight: 600;
+  text-decoration: none;
 }
 .su-link:hover { text-decoration: underline; }
 
-/* ── Submit button ── */
+/* ── Submit button — always blue, opacity on disabled (loading only) ── */
 .su-submit-btn {
   width: 100%;
   padding: 14px;
@@ -1867,10 +1889,7 @@ input, textarea { font-family: inherit; }
   min-height: 50px;
   transition: opacity .15s;
 }
-.su-submit-btn:disabled {
-  opacity: .5;
-  cursor: not-allowed;
-}
+.su-submit-btn:disabled { opacity: .6; cursor: not-allowed; }
 .su-submit-btn:not(:disabled):hover { opacity: .92; }
 
 /* ── "I already have an account" link-button ── */
