@@ -28,8 +28,16 @@ async function signup(req, res) {
     res.json({ token, user: { id: result.insertId, username, email, full_name: full_name || '' } });
   } catch (err) {
     console.error('Signup error:', err);
-    if (err.code === 'ER_DUP_ENTRY')
+    if (err.code === 'ER_DUP_ENTRY') {
+      // Parse which field caused the duplicate — sqlMessage contains the key name
+      // e.g. "Duplicate entry 'jp2254' for key 'users.username'"
+      const msg = (err.sqlMessage || '').toLowerCase();
+      if (msg.includes('username'))
+        return res.status(400).json({ error: 'Username already taken' });
+      if (msg.includes('email'))
+        return res.status(400).json({ error: 'Email already taken' });
       return res.status(400).json({ error: 'Username or email already taken' });
+    }
     res.status(500).json({ error: 'Server error' });
   }
 }

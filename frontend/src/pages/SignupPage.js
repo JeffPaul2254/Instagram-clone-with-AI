@@ -161,11 +161,22 @@ export default function SignupPage() {
       const message = typeof errData === 'string'
         ? errData
         : errData?.error || errData?.message || 'Signup failed';
-      // Map backend duplicate errors to the right field
-      if (String(message).toLowerCase().includes('username')) {
+      // Map backend duplicate errors to the correct field
+      // Backend now returns specific messages: "Username already taken" / "Email already taken"
+      // Fallback: "Username or email already taken" → show on both fields
+      const msgLower = String(message).toLowerCase();
+      const isUsernameDup = msgLower === 'username already taken' ||
+        (msgLower.includes('username') && !msgLower.includes('email'));
+      const isEmailDup = msgLower === 'email already taken' ||
+        (msgLower.includes('email') && !msgLower.includes('username'));
+      const isBothDup = msgLower.includes('username') && msgLower.includes('email');
+
+      if (isUsernameDup) {
         setErrors(p => ({ ...p, username: 'That username is taken. Try another.' }));
-      } else if (String(message).toLowerCase().includes('email')) {
+      } else if (isEmailDup) {
         setErrors(p => ({ ...p, email: 'Another account is using that email.' }));
+      } else if (isBothDup) {
+        setErrors(p => ({ ...p, username: 'That username is taken. Try another.', email: 'Another account is using that email.' }));
       } else {
         toast.error(String(message));
       }
