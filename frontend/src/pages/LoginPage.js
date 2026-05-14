@@ -84,11 +84,6 @@ export default function LoginPage() {
     }
   };
 
-  const fallback = grad => e => {
-    e.target.style.display = 'none';
-    e.target.parentElement.style.background = grad;
-  };
-
   return (
     <div className="auth-page">
 
@@ -106,12 +101,16 @@ export default function LoginPage() {
           </h1>
 
           <div className="auth-collage">
-            <img
-              src={IMG}
-              alt="Instagram stories preview"
-              className="auth-collage__hero"
-              onError={fallback('linear-gradient(160deg,#f77737,#e1306c)')}
-            />
+            <div className="auth-collage__card auth-collage__card--back" />
+            <div className="auth-collage__card auth-collage__card--mid">
+              <img
+                src={IMG}
+                alt="Instagram stories preview"
+                className="auth-collage__hero"
+                onError={e => { e.target.style.display = 'none'; }}
+              />
+            </div>
+            <div className="auth-collage__card auth-collage__card--front" />
           </div>
         </div>
 
