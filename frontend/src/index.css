@@ -252,6 +252,18 @@ input, textarea { font-family: inherit; }
 .post-card__header   { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; }
 .post-card__img-wrap { position: relative; background: #000; }
 .post-card__img      { width: 100%; max-height: 600px; object-fit: contain; display: block; }
+.post-card__img-broken {
+  width: 100%;
+  min-height: 300px;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #8e8e8e;
+  font-size: 13px;
+}
 .post-card__heart    { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; animation: heartPop .7s ease forwards; }
 .post-card__actions  { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px 4px; }
 .post-card__act-grp  { display: flex; gap: 14px; }

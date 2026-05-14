@@ -162,7 +162,23 @@ export default function PostCard({ post, currentUser, onDeleted, onUpdated, onHi
         {/* ── Image ── */}
         {postImageUrl && (
           <div className="post-card__img-wrap" onDoubleClick={toggleLike}>
-            <img src={postImageUrl} alt="post" className="post-card__img" />
+            <img
+              src={postImageUrl}
+              alt="post"
+              className="post-card__img"
+              onError={e => {
+                e.target.style.display = 'none';
+                e.target.nextSibling && (e.target.nextSibling.style.display = 'flex');
+              }}
+            />
+            <div className="post-card__img-broken" style={{ display:'none' }}>
+              <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="#dbdbdb" strokeWidth="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+              <span>Image unavailable</span>
+            </div>
             {heartAnim && (
               <div className="post-card__heart">
                 <svg viewBox="0 0 24 24" width="90" height="90" fill="white"

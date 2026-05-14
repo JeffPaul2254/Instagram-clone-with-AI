@@ -50,6 +50,13 @@ if (!process.env.JWT_SECRET) {
   process.exit(1);
 }
 
+// Warn loudly if UPLOAD_DIR is not set — files will be lost on every deploy
+if (!process.env.UPLOAD_DIR) {
+  console.warn('⚠️  WARNING: UPLOAD_DIR env var is not set.');
+  console.warn('   Uploads will be saved to the ephemeral filesystem and LOST on every redeploy.');
+  console.warn('   Fix: Add a Railway Volume at /data and set UPLOAD_DIR=/data/uploads');
+}
+
 // ── Socket.io setup ────────────────────────────────────────────
 const io = new Server(server, {
   cors: { origin: FRONTEND_URL, credentials: true },
