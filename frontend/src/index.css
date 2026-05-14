@@ -1302,63 +1302,21 @@ input, textarea { font-family: inherit; }
 }
 .auth-orange { color: #e8721c; }
 
-/* ── Auth collage — three stacked gradient cards ── */
+/* ── Auth collage — single image ── */
 .auth-collage {
   position: relative;
   width: 440px;
   height: 500px;
   flex-shrink: 0;
-  background: none;
 }
 
-/* All three cards */
-.auth-collage__card {
-  position: absolute;
-  border-radius: 16px;
-  overflow: hidden;
-}
-
-/* Back card — left, rotated, purple/blue */
-.auth-collage__card--back {
-  width: 220px;
-  height: 340px;
-  top: 60px;
-  left: 10px;
-  transform: rotate(-8deg);
-  background: linear-gradient(160deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%);
-  z-index: 1;
-  opacity: .85;
-}
-
-/* Mid card — centre, straight, orange/pink — real image goes here */
-.auth-collage__card--mid {
-  width: 260px;
-  height: 380px;
-  top: 30px;
-  left: 90px;
-  z-index: 3;
-  background: linear-gradient(160deg, #f77737 0%, #e1306c 60%, #c13584 100%);
-}
-
-/* Hero image inside mid card — fills card, hidden if 404 */
 .auth-collage__hero {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center top;
+  border-radius: 18px;
   display: block;
-}
-
-/* Front card — right, rotated, blue/purple */
-.auth-collage__card--front {
-  width: 210px;
-  height: 320px;
-  top: 80px;
-  right: 10px;
-  transform: rotate(7deg);
-  background: linear-gradient(160deg, #405de6 0%, #5851db 40%, #833ab4 100%);
-  z-index: 2;
-  opacity: .85;
 }
 
 /* Floating stickers — positions unchanged */
@@ -1620,10 +1578,7 @@ input, textarea { font-family: inherit; }
 /* Scale down at mid-range widths before full collapse */
 @media (max-width: 1100px) and (min-width: 936px) {
   .auth-left { padding: 40px 24px; }
-  .auth-collage { width: 340px; height: 390px; }
-  .auth-collage__card--back  { width: 170px; height: 265px; top: 50px; left: 8px; }
-  .auth-collage__card--mid   { width: 200px; height: 295px; top: 25px; left: 70px; }
-  .auth-collage__card--front { width: 163px; height: 250px; top: 65px; right: 8px; }
+  .auth-collage { width: 320px; height: 380px; }
   .auth-headline { font-size: 32px; max-width: 320px; }
   .auth-right { width: 400px; max-width: 400px; padding: 40px 24px; }
 }
