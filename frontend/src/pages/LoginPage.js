@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import axios from '../utils/axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
-import { mediaUrl } from '../utils/helpers';
 
 const FB_OAUTH_URL =
   'https://www.facebook.com/login.php?next=https%3A%2F%2Fwww.facebook.com%2Foidc%2F%3Fapp_id%3D124024574287414%26redirect_uri%3Dhttps%253A%252F%252Fwww.instagram.com%252Faccounts%252Fsignupviafb%252F%26response_type%3Dcode%26scope%3Dopenid%2Bemail%2Bprofile%2Blinking%26state%3DATqVE3DzqfrscLStLaeZCe21JtIbUjlsLwK3aooXjVberzJxkFdRhqgAnJxWK-mUY_4-gctTRINF651ZimQ3IlpliuQKozdnlxHAsjl3mwHa4s1a1ebms9PsbNKIijNeoW5sEztPHPLY17iMlCkRojLYdq7bNw5uBvXMh1V0UsKKP7xw2mQNXlYPB8MCCKwHfdGdCEb-ADpGSahDyacZk5mlM-LTwIPoybzATVhWihVJ7ccRL82ZzVSB33o7IB3lnQtr7vbFEWWSHFyonMTrUUYUrg';
@@ -56,7 +55,9 @@ const FOOTER_LINKS = [
   'Contact Uploading & Non-Users','Meta Verified',
 ];
 
-const IMG = mediaUrl('/uploads/signinpageimage.webp');
+// Static asset — lives in frontend/public/signinpageimage.webp
+// Served by Vercel, never lost on Railway redeploys
+const IMG = '/signinpageimage.webp';
 
 export default function LoginPage() {
   const { login } = useAuth();
