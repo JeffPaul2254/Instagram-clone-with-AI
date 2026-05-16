@@ -1255,8 +1255,8 @@ input, textarea { font-family: inherit; }
   z-index: 10;
 }
 .auth-topbar__icon {
-  width: 44px;
-  height: 44px;
+  width: 96px;
+  height: 96px;
   display: block;
 }
 
@@ -1280,33 +1280,36 @@ input, textarea { font-family: inherit; }
   min-width: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   gap: 32px;
   padding: 40px 48px 40px 40px;
 }
 
 .auth-headline {
-  font-size: 28px;
+  font-size: 44px;
   font-weight: 400;
-  line-height: 1.3;
+  line-height: 1.35;
   color: var(--text-primary);
-  letter-spacing: -.2px;
+  letter-spacing: -.5px;
   max-width: 100%;
   word-break: normal;
-  text-align: center;
+  text-align: left;
 }
 .auth-headline__line1 {
   display: block;
   white-space: nowrap;
 }
-.auth-orange { color: #e8721c; }
+/* Real Instagram uses pink/magenta for "close friends" */
+.auth-pink   { color: #E1306C; }
+.auth-orange { color: #e8721c; } /* kept for backward compat */
 
-/* ── Auth collage — single image ── */
+/* ── Auth collage — single image, larger to match real IG ── */
 .auth-collage {
   position: relative;
-  width: 440px;
-  height: 500px;
+  width: 100%;
+  max-width: 560px;
+  height: 520px;
   flex-shrink: 0;
 }
 
@@ -1544,9 +1547,12 @@ input, textarea { font-family: inherit; }
 .auth-create-btn:hover { background: rgba(8,102,255,.05); }
 
 /* ── Meta wordmark ── */
+/* Meta wordmark — full SVG with infinity mark */
 .auth-meta {
   display: block;
   margin: 0 auto;
+  width: 75px;
+  height: 15px;
 }
 
 /* ── Footer ── */
@@ -1563,14 +1569,14 @@ input, textarea { font-family: inherit; }
 }
 .auth-footer__links span {
   font-size: 12px;
-  color: var(--text-muted);
+  color: #737373;
   cursor: pointer;
 }
 .auth-footer__links span:hover { text-decoration: underline; }
 .auth-footer__copy {
   text-align: center;
   font-size: 12px;
-  color: var(--text-muted);
+  color: #737373;
 }
 
 /* ── Responsive ── */
@@ -1578,8 +1584,8 @@ input, textarea { font-family: inherit; }
 /* Scale down at mid-range widths before full collapse */
 @media (max-width: 1100px) and (min-width: 936px) {
   .auth-left { padding: 40px 24px; }
-  .auth-collage { width: 320px; height: 380px; }
-  .auth-headline { font-size: 32px; max-width: 320px; }
+  .auth-collage { max-width: 380px; height: 420px; }
+  .auth-headline { font-size: 34px; }
   .auth-right { width: 400px; max-width: 400px; padding: 40px 24px; }
 }
 
