@@ -1251,10 +1251,11 @@ input, textarea { font-family: inherit; }
 /* auth-topbar no longer used — logo is now inside auth-left */
 .auth-topbar { display: none; }
 .auth-topbar__icon {
-  width: 56px;
-  height: 56px;
+  width: 40px;
+  height: 40px;
   display: block;
   object-fit: contain;
+  flex-shrink: 0;
 }
 
 /* ── Outer page wrapper (already set above, this extends it) ── */
@@ -1279,9 +1280,13 @@ input, textarea { font-family: inherit; }
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  gap: 24px;
-  padding: 60px 48px 60px 40px;
+  gap: 0;
+  padding: 40px 48px 40px 40px;
 }
+
+/* Tight gap: logo → headline is 12px, headline → collage is 32px */
+.auth-left > .auth-topbar__icon { margin-bottom: 12px; }
+.auth-left > .auth-headline      { margin-bottom: 32px; }
 
 .auth-headline {
   font-size: 44px;
@@ -1580,10 +1585,10 @@ input, textarea { font-family: inherit; }
 
 /* Scale down at mid-range widths before full collapse */
 @media (max-width: 1100px) and (min-width: 936px) {
-  .auth-left { padding: 40px 20px 40px 24px; gap: 20px; }
+  .auth-left { padding: 40px 20px 40px 24px; }
   .auth-collage { max-width: 340px; height: 380px; }
   .auth-headline { font-size: 32px; }
-  .auth-topbar__icon { width: 48px; height: 48px; }
+  .auth-topbar__icon { width: 36px; height: 36px; }
   .auth-right { width: 380px; max-width: 380px; padding: 40px 20px; }
 }
 

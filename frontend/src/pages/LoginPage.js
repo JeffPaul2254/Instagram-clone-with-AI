@@ -10,7 +10,7 @@ const FB_OAUTH_URL =
 function IGIcon() {
   return (
     <img
-      src="/Meta-Logo.png"
+      src="/instagram-logo.png"
       alt="Instagram"
       className="auth-topbar__icon"
     />
