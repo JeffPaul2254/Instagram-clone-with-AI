@@ -99,18 +99,19 @@ export default function LoginPage() {
 
         {/* LEFT: logo + headline + collage */}
         <div className="auth-left">
-          <IGIcon />
-          <h1 className="auth-headline">
-            <span className="auth-headline__line1">See everyday moments from your</span>
-            {' '}<span className="auth-pink">close friends</span>.
-          </h1>
-
-          <div className="auth-collage">
-            <img
-              src={IMG}
-              alt="Instagram stories preview"
-              className="auth-collage__hero"
-            />
+          <div className="auth-left__inner">
+            <IGIcon />
+            <h1 className="auth-headline">
+              <span className="auth-headline__line1">See everyday moments from your</span>
+              {' '}<span className="auth-pink">close friends</span>.
+            </h1>
+            <div className="auth-collage">
+              <img
+                src={IMG}
+                alt="Instagram stories preview"
+                className="auth-collage__hero"
+              />
+            </div>
           </div>
         </div>
 

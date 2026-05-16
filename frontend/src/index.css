@@ -1251,8 +1251,8 @@ input, textarea { font-family: inherit; }
 /* auth-topbar no longer used — logo is now inside auth-left */
 .auth-topbar { display: none; }
 .auth-topbar__icon {
-  width: 40px;
-  height: 40px;
+  width: 56px;
+  height: 56px;
   display: block;
   object-fit: contain;
   flex-shrink: 0;
@@ -1272,21 +1272,30 @@ input, textarea { font-family: inherit; }
   overflow: hidden;
 }
 
-/* ── LEFT column ── */
+/* ── LEFT column — centres the inner content block ── */
 .auth-left {
   flex: 1 1 0;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  gap: 0;
-  padding: 40px 48px 40px 40px;
+  padding: 40px 32px 40px 40px;
 }
 
-/* Tight gap: logo → headline is 12px, headline → collage is 32px */
-.auth-left > .auth-topbar__icon { margin-bottom: 12px; }
-.auth-left > .auth-headline      { margin-bottom: 32px; }
+/* Inner block — logo + headline + collage stay tightly together */
+.auth-left__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  width: 100%;
+  max-width: 560px;
+}
+
+/* Tight spacing: logo → headline 12px, headline → collage 28px */
+.auth-left__inner > .auth-topbar__icon { margin-bottom: 12px; }
+.auth-left__inner > .auth-headline     { margin-bottom: 28px; }
 
 .auth-headline {
   font-size: 44px;
@@ -1585,10 +1594,11 @@ input, textarea { font-family: inherit; }
 
 /* Scale down at mid-range widths before full collapse */
 @media (max-width: 1100px) and (min-width: 936px) {
-  .auth-left { padding: 40px 20px 40px 24px; }
+  .auth-left { padding: 40px 16px 40px 20px; }
+  .auth-left__inner { max-width: 340px; }
   .auth-collage { max-width: 340px; height: 380px; }
   .auth-headline { font-size: 32px; }
-  .auth-topbar__icon { width: 36px; height: 36px; }
+  .auth-topbar__icon { width: 44px; height: 44px; }
   .auth-right { width: 380px; max-width: 380px; padding: 40px 20px; }
 }
 
