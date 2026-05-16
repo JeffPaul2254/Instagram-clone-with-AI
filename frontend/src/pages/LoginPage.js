@@ -10,12 +10,9 @@ const FB_OAUTH_URL =
 function IGIcon() {
   return (
     <img
-      src="https://static.cdninstagram.com/rsrc.php/yc/r/Ls1ECoTDejJ.webp"
+      src="/Meta-Logo.png"
       alt="Instagram"
       className="auth-topbar__icon"
-      width="96"
-      height="96"
-      style={{ display: 'block' }}
     />
   );
 }
@@ -98,14 +95,11 @@ export default function LoginPage() {
   return (
     <div className="auth-page">
 
-      <div className="auth-topbar">
-        <IGIcon />
-      </div>
-
       <div className="auth-main">
 
-        {/* LEFT: headline + collage */}
+        {/* LEFT: logo + headline + collage */}
         <div className="auth-left">
+          <IGIcon />
           <h1 className="auth-headline">
             <span className="auth-headline__line1">See everyday moments from your</span>
             {' '}<span className="auth-pink">close friends</span>.

@@ -399,7 +399,7 @@ input, textarea { font-family: inherit; }
 .reel-upload__edit   { display: flex; overflow: hidden; max-height: calc(90vh - 60px); }
 
 /* ── AUTH PAGES ─────────────────────────────────────────────── */
-.auth-page             { display: flex; flex-direction: column; min-height: 100vh; background: var(--bg); gap: 0; padding: 0; position: relative; }
+.auth-page             { display: flex; flex-direction: column; min-height: 100vh; background: var(--bg); gap: 0; padding: 0; }
 .auth-page--col        { flex-direction: column; }
 .auth-card             { background: var(--surface); border: 1px solid var(--border); border-radius: 1px; padding: 40px 40px 24px; text-align: center; }
 .auth-card--login      { width: 100%; max-width: 350px; margin-bottom: 10px; }
@@ -1248,16 +1248,13 @@ input, textarea { font-family: inherit; }
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── Top-left IG icon bar ── */
-.auth-topbar {
-  position: absolute;
-  top: 20px;
-  left: 24px;
-  z-index: 10;
-}
+/* auth-topbar no longer used — logo is now inside auth-left */
+.auth-topbar { display: none; }
 .auth-topbar__icon {
-  width: 96px;
-  height: 96px;
+  width: 56px;
+  height: 56px;
   display: block;
+  object-fit: contain;
 }
 
 /* ── Outer page wrapper (already set above, this extends it) ── */
@@ -1282,8 +1279,8 @@ input, textarea { font-family: inherit; }
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  gap: 32px;
-  padding: 40px 48px 40px 40px;
+  gap: 24px;
+  padding: 60px 48px 60px 40px;
 }
 
 .auth-headline {
@@ -1583,10 +1580,11 @@ input, textarea { font-family: inherit; }
 
 /* Scale down at mid-range widths before full collapse */
 @media (max-width: 1100px) and (min-width: 936px) {
-  .auth-left { padding: 40px 24px; }
-  .auth-collage { max-width: 380px; height: 420px; }
-  .auth-headline { font-size: 34px; }
-  .auth-right { width: 400px; max-width: 400px; padding: 40px 24px; }
+  .auth-left { padding: 40px 20px 40px 24px; gap: 20px; }
+  .auth-collage { max-width: 340px; height: 380px; }
+  .auth-headline { font-size: 32px; }
+  .auth-topbar__icon { width: 48px; height: 48px; }
+  .auth-right { width: 380px; max-width: 380px; padding: 40px 20px; }
 }
 
 @media (max-width: 935px) {
