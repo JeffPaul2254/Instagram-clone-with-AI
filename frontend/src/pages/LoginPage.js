@@ -64,8 +64,8 @@ const FOOTER_LINKS = [
   'Contact Uploading & Non-Users','Meta Verified',
 ];
 
-// Served by Vercel from frontend/public/signinpageimage.webp — never lost on redeploy
-const IMG = '/signinpageimage.webp';
+// Instagram stories collage image from CDN
+const IMG = 'https://static.cdninstagram.com/rsrc.php/yJ/r/53X3pk-t2Gn.webp';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -95,12 +95,16 @@ export default function LoginPage() {
   return (
     <div className="auth-page">
 
+      {/* Logo — absolute top-left, above layout */}
+      <div className="auth-topbar">
+        <IGIcon />
+      </div>
+
       <div className="auth-main">
 
-        {/* LEFT: logo + headline + collage */}
+        {/* LEFT: headline + collage */}
         <div className="auth-left">
           <div className="auth-left__inner">
-            <IGIcon />
             <h1 className="auth-headline">
               <span className="auth-headline__line1">See everyday moments from your</span>
               {' '}<span className="auth-pink">close friends</span>.

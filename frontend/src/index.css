@@ -399,7 +399,7 @@ input, textarea { font-family: inherit; }
 .reel-upload__edit   { display: flex; overflow: hidden; max-height: calc(90vh - 60px); }
 
 /* ── AUTH PAGES ─────────────────────────────────────────────── */
-.auth-page             { display: flex; flex-direction: column; min-height: 100vh; background: var(--bg); gap: 0; padding: 0; }
+.auth-page             { display: flex; flex-direction: column; min-height: 100vh; background: var(--bg); gap: 0; padding: 0; position: relative; }
 .auth-page--col        { flex-direction: column; }
 .auth-card             { background: var(--surface); border: 1px solid var(--border); border-radius: 1px; padding: 40px 40px 24px; text-align: center; }
 .auth-card--login      { width: 100%; max-width: 350px; margin-bottom: 10px; }
@@ -1248,11 +1248,16 @@ input, textarea { font-family: inherit; }
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── Top-left IG icon bar ── */
-/* auth-topbar no longer used — logo is now inside auth-left */
-.auth-topbar { display: none; }
+/* Logo — absolute top-left above the main content */
+.auth-topbar {
+  position: absolute;
+  top: 24px;
+  left: 28px;
+  z-index: 10;
+}
 .auth-topbar__icon {
-  width: 56px;
-  height: 56px;
+  width: 72px;
+  height: 72px;
   display: block;
   object-fit: contain;
   flex-shrink: 0;
@@ -1279,10 +1284,10 @@ input, textarea { font-family: inherit; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 32px 40px 40px;
+  padding: 100px 32px 40px 40px;
 }
 
-/* Inner block — logo + headline + collage stay tightly together */
+/* Inner block — headline + collage tightly grouped */
 .auth-left__inner {
   display: flex;
   flex-direction: column;
@@ -1292,8 +1297,7 @@ input, textarea { font-family: inherit; }
   max-width: 480px;
 }
 
-/* Tight spacing: logo → headline 12px, headline → collage 28px */
-.auth-left__inner > .auth-topbar__icon { margin-bottom: 12px; }
+.auth-left__inner > .auth-topbar__icon { margin-bottom: 0; }
 .auth-left__inner > .auth-headline     { margin-bottom: 28px; }
 
 .auth-headline {
@@ -1498,21 +1502,32 @@ input, textarea { font-family: inherit; }
 
 /* ── Forgot password ── */
 .auth-forgot {
-  font-size: 13px;
-  color: var(--text-secondary);
-  background: none;
-  border: none;
-  cursor: pointer;
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 600;
   font-family: inherit;
-  margin-top: 12px;
-  padding: 0;
+  cursor: pointer;
   display: block;
   text-align: center;
+  /* Invisible by default — same shape as other buttons but transparent */
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  margin-top: 6px;
+  transition: background var(--trans-fast), border-color var(--trans-fast), color var(--trans-fast);
 }
-.auth-forgot:hover { text-decoration: underline; }
+/* On hover: border appears making it look like the other pill buttons */
+.auth-forgot:hover {
+  background: var(--bg);
+  border-color: var(--border);
+  color: var(--text-primary);
+  text-decoration: none;
+}
 
-/* Gap between forgot and FB button */
-.auth-form-gap { height: 28px; display: block; }
+/* Larger gap between forgot and FB button — pushes FB+Create lower */
+.auth-form-gap { height: 20px; display: block; }
 
 /* ── Facebook button ── */
 .auth-fb-btn {
@@ -1533,6 +1548,7 @@ input, textarea { font-family: inherit; }
   transition: background var(--trans-fast);
   text-decoration: none;
   margin-bottom: 10px;
+  margin-top: 16px;
 }
 .auth-fb-btn:hover { background: var(--bg); }
 
@@ -1557,12 +1573,12 @@ input, textarea { font-family: inherit; }
 .auth-create-btn:hover { background: rgba(8,102,255,.05); }
 
 /* ── Meta wordmark ── */
-/* Meta wordmark — full SVG with infinity mark */
+/* Meta wordmark — full SVG with infinity mark, smaller size */
 .auth-meta {
   display: block;
   margin: 0 auto;
-  width: 75px;
-  height: 15px;
+  width: 60px;
+  height: 12px;
 }
 
 /* ── Footer ── */
@@ -1594,14 +1610,14 @@ input, textarea { font-family: inherit; }
 /* Scale down at mid-range widths before full collapse */
 /* Scale collage at 1200-1400px where left col can be tight */
 @media (max-width: 1300px) and (min-width: 1101px) {
-  .auth-left { padding: 40px 24px 40px 32px; }
+  .auth-left { padding: 100px 24px 40px 32px; }
   .auth-left__inner { max-width: 420px; }
   .auth-collage { max-width: 420px; height: 360px; }
   .auth-headline { font-size: 32px; }
 }
 
 @media (max-width: 1100px) and (min-width: 936px) {
-  .auth-left { padding: 32px 16px 32px 20px; }
+  .auth-left { padding: 100px 16px 32px 20px; }
   .auth-left__inner { max-width: 300px; }
   .auth-collage { max-width: 300px; height: 300px; }
   .auth-headline { font-size: 26px; }
