@@ -1259,7 +1259,7 @@ input, textarea { font-family: inherit; }
 
 /* ── CHANGED: headline font size enlarged to match Instagram's ~65px ── */
 .auth-headline {
-  font-size: clamp(24px, 3vw, 48px);
+  font-size: clamp(16px, 2vw, 28px);  
   font-weight: 400;
   line-height: 1.18;
   color: var(--text-primary);
