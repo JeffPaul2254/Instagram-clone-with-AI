@@ -439,7 +439,6 @@ input, textarea { font-family: inherit; }
    STORIES
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── Stories bar (horizontal scroll row above feed) ── */
 .stories-bar {
   display: flex;
   gap: 16px;
@@ -454,7 +453,6 @@ input, textarea { font-family: inherit; }
 }
 .stories-bar::-webkit-scrollbar { display: none; }
 
-/* ── Individual circle ── */
 .story-circle {
   display: flex;
   flex-direction: column;
@@ -466,7 +464,6 @@ input, textarea { font-family: inherit; }
 }
 .story-circle:hover .story-avatar { transform: scale(1.04); }
 
-/* ── Gradient ring (unviewed) ── */
 .story-ring {
   padding: 2px;
   border-radius: 50%;
@@ -492,7 +489,6 @@ input, textarea { font-family: inherit; }
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  /* white gap between ring and photo */
   background: var(--card-bg);
   padding: 2px;
 }
@@ -514,7 +510,6 @@ input, textarea { font-family: inherit; }
   font-size: 20px;
 }
 
-/* Plus badge on "Your story" circle */
 .story-add-badge {
   position: absolute;
   bottom: 0;
@@ -540,7 +535,6 @@ input, textarea { font-family: inherit; }
   padding: 0 2px;
 }
 
-/* ── Full-screen story viewer ── */
 .story-viewer {
   position: fixed;
   inset: 0;
@@ -573,7 +567,6 @@ input, textarea { font-family: inherit; }
   z-index: 1;
 }
 
-/* Progress bars */
 .story-viewer__bars {
   position: absolute;
   top: 12px;
@@ -597,7 +590,6 @@ input, textarea { font-family: inherit; }
   transition: width 0.05s linear;
 }
 
-/* Header row (avatar + username + controls) */
 .story-viewer__header {
   position: absolute;
   top: 24px;
@@ -624,7 +616,6 @@ input, textarea { font-family: inherit; }
   background: rgba(255,255,255,.15);
 }
 
-/* Caption */
 .story-viewer__caption {
   position: absolute;
   bottom: 80px;
@@ -641,7 +632,6 @@ input, textarea { font-family: inherit; }
   pointer-events: none;
 }
 
-/* View count button (owner) */
 .story-viewer__views-btn {
   position: absolute;
   bottom: 28px;
@@ -664,7 +654,6 @@ input, textarea { font-family: inherit; }
 }
 .story-viewer__views-btn:hover { background: rgba(0,0,0,.6); }
 
-/* Viewers slide-up panel */
 .story-views-panel {
   position: absolute;
   bottom: 0;
@@ -680,7 +669,6 @@ input, textarea { font-family: inherit; }
   z-index: 20;
 }
 
-/* Invisible tap zones */
 .story-tap-left,
 .story-tap-right {
   position: absolute;
@@ -693,14 +681,12 @@ input, textarea { font-family: inherit; }
 .story-tap-left  { left: 0; }
 .story-tap-right { right: 0; }
 
-/* ── Spinner white variant (used in story viewer loader) ── */
 .spinner--white { border-color: rgba(255,255,255,.3); border-top-color: #fff; }
 
 /* ═══════════════════════════════════════════════════════════════
-   POST ··· MENU — INSTAGRAM-STYLE CENTRED SHEET
+   POST ··· MENU
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── Three-dot button ── */
 .post-card__dots-btn {
   background: none;
   border: none;
@@ -715,7 +701,6 @@ input, textarea { font-family: inherit; }
 }
 .post-card__dots-btn:hover { background: var(--border-light); }
 
-/* ── Sheet overlay (full-screen dim) ── */
 .ig-sheet-overlay {
   position: fixed;
   inset: 0;
@@ -727,7 +712,6 @@ input, textarea { font-family: inherit; }
   padding: 20px;
 }
 
-/* ── Sheet card ── */
 .ig-sheet {
   background: var(--surface);
   border-radius: 14px;
@@ -739,7 +723,6 @@ input, textarea { font-family: inherit; }
   overflow-y: auto;
 }
 
-/* ── Optional title row ── */
 .ig-sheet__title {
   padding: 16px;
   text-align: center;
@@ -749,7 +732,6 @@ input, textarea { font-family: inherit; }
   border-bottom: 1px solid var(--border-light);
 }
 
-/* ── Sheet button ── */
 .ig-sheet__btn {
   display: flex;
   align-items: center;
@@ -771,7 +753,6 @@ input, textarea { font-family: inherit; }
 .ig-sheet__btn--danger     { color: var(--danger); }
 .ig-sheet__btn--bold       { font-weight: 700; }
 
-/* ── Report confirm block ── */
 .sheet-report-confirm {
   display: flex;
   flex-direction: column;
@@ -802,7 +783,6 @@ input, textarea { font-family: inherit; }
   max-width: 280px;
 }
 
-/* ── Embed code preview ── */
 .ig-embed-preview {
   margin: 0 16px 12px;
   padding: 12px;
@@ -823,7 +803,6 @@ input, textarea { font-family: inherit; }
   line-height: 1.5;
 }
 
-/* ── Share copy-link row ── */
 .ig-share-copy-row {
   display: flex;
   align-items: center;
@@ -936,7 +915,6 @@ input, textarea { font-family: inherit; }
   min-height: 100vh;
 }
 
-/* ── Main card (image + side panel) ── */
 .pdp-card {
   display: flex;
   width: 100%;
@@ -949,7 +927,6 @@ input, textarea { font-family: inherit; }
   max-height: 85vh;
 }
 
-/* Left: image */
 .pdp-card__img {
   flex: 0 0 55%;
   background: #000;
@@ -982,7 +959,6 @@ input, textarea { font-family: inherit; }
   line-height: 1.6;
 }
 
-/* Right: side panel */
 .pdp-card__side {
   flex: 1;
   display: flex;
@@ -991,7 +967,6 @@ input, textarea { font-family: inherit; }
   border-left: 1px solid var(--border);
 }
 
-/* Header */
 .pdp-card__hdr {
   display: flex;
   justify-content: space-between;
@@ -1001,7 +976,6 @@ input, textarea { font-family: inherit; }
   flex-shrink: 0;
 }
 
-/* Scrollable comments area */
 .pdp-card__scroll {
   flex: 1;
   overflow-y: auto;
@@ -1009,14 +983,12 @@ input, textarea { font-family: inherit; }
   min-height: 0;
 }
 
-/* Action row */
 .pdp-card__actions {
   padding: 8px 16px 6px;
   border-top: 1px solid var(--border-light);
   flex-shrink: 0;
 }
 
-/* Comment form */
 .pdp-card__cmt-form {
   display: flex;
   align-items: center;
@@ -1026,7 +998,6 @@ input, textarea { font-family: inherit; }
   flex-shrink: 0;
 }
 
-/* ── Loading skeleton ── */
 .pdp-skeleton {
   display: flex;
   width: 100%;
@@ -1046,7 +1017,6 @@ input, textarea { font-family: inherit; }
   border-left: 1px solid var(--border);
 }
 
-/* ── 404 state ── */
 .pdp-not-found {
   display: flex;
   flex-direction: column;
@@ -1068,7 +1038,6 @@ input, textarea { font-family: inherit; }
   line-height: 1.6;
 }
 
-/* ── Responsive: stack on narrow screens ── */
 @media (max-width: 768px) {
   .pdp-inner {
     padding: 16px 0 60px;
@@ -1097,10 +1066,9 @@ input, textarea { font-family: inherit; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   EXPLORE — SEARCH BAR, CATEGORY PILLS, HASHTAG LINKS
+   EXPLORE
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── Search bar ── */
 .explore-search-wrap {
   padding: 0 0 12px;
 }
@@ -1136,7 +1104,6 @@ input, textarea { font-family: inherit; }
   flex-shrink: 0;
 }
 
-/* ── Category pills ── */
 .explore-cats {
   display: flex;
   gap: 8px;
@@ -1169,7 +1136,6 @@ input, textarea { font-family: inherit; }
   border-color: var(--text-primary);
 }
 
-/* ── Active filter label ── */
 .explore-filter-label {
   display: flex;
   align-items: center;
@@ -1189,7 +1155,6 @@ input, textarea { font-family: inherit; }
   font-family: inherit;
 }
 
-/* ── Clickable hashtag in captions ── */
 .caption-hashtag {
   color: var(--accent);
   cursor: pointer;
@@ -1199,7 +1164,6 @@ input, textarea { font-family: inherit; }
   text-decoration: underline;
 }
 
-/* ── Post location ── */
 .post-location-tag {
   display: inline-flex;
   align-items: center;
@@ -1226,7 +1190,6 @@ input, textarea { font-family: inherit; }
 }
 .post-location-input::placeholder { color: var(--text-secondary); }
 
-/* ── Comment like button ── */
 .cmt-like-btn {
   display: flex;
   align-items: center;
@@ -1240,15 +1203,12 @@ input, textarea { font-family: inherit; }
   transition: opacity var(--trans-fast);
 }
 .cmt-like-btn:hover { opacity: 1; }
+
 /* ═══════════════════════════════════════════════════════════════
-   AUTH — NEW SPLIT-SCREEN LOGIN (LoginPage redesign)
-   These classes are used by LoginPage.js (new design).
-   The old .auth-card / .auth-login-card rules above are kept
-   for SignupPage and any other existing page that references them.
+   AUTH — SPLIT-SCREEN LOGIN (LoginPage)
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── Top-left IG icon bar ── */
-/* Logo — absolute top-left above the main content */
 .auth-topbar {
   position: absolute;
   top: 24px;
@@ -1263,9 +1223,7 @@ input, textarea { font-family: inherit; }
   flex-shrink: 0;
 }
 
-/* ── Outer page wrapper (already set above, this extends it) ── */
-
-/* ── Middle area (left collage + divider + right form) ── */
+/* ── Middle area ── */
 .auth-main {
   flex: 1;
   display: flex;
@@ -1276,7 +1234,7 @@ input, textarea { font-family: inherit; }
   overflow: hidden;
 }
 
-/* ── LEFT column — centres the inner content block ── */
+/* ── LEFT column ── */
 .auth-left {
   flex: 1 1 0;
   min-width: 0;
@@ -1287,56 +1245,55 @@ input, textarea { font-family: inherit; }
   padding: 100px 32px 40px 40px;
 }
 
-/* Inner block — headline + collage tightly grouped */
 .auth-left__inner {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 0;
   width: 100%;
-  max-width: 480px;
+  max-width: 520px;
 }
 
 .auth-left__inner > .auth-topbar__icon { margin-bottom: 0; }
 .auth-left__inner > .auth-headline     { margin-bottom: 28px; }
 
+/* ── CHANGED: headline font size enlarged to match Instagram's ~65px ── */
 .auth-headline {
-  font-size: 36px;
+  font-size: clamp(36px, 4.5vw, 65px);
   font-weight: 400;
-  line-height: 1.3;
+  line-height: 1.18;
   color: var(--text-primary);
-  letter-spacing: -.3px;
+  letter-spacing: -.5px;
   max-width: 100%;
   word-break: normal;
   text-align: left;
 }
-/* No white-space:nowrap — let headline wrap naturally so it never overflows */
 .auth-headline__line1 {
   display: inline;
 }
-/* Real Instagram uses pink/magenta for "close friends" */
 .auth-pink   { color: #E1306C; }
-.auth-orange { color: #e8721c; } /* kept for backward compat */
+.auth-orange { color: #e8721c; }
 
-/* ── Auth collage — single image ── */
+/* ── Auth collage ── */
+/* ── CHANGED: enlarged collage to match original site ── */
 .auth-collage {
   position: relative;
   width: 100%;
-  max-width: 480px;
-  height: 400px;
+  max-width: 520px;
+  height: 520px;
   flex-shrink: 0;
 }
 
+/* ── CHANGED: object-fit contain + no border-radius so full image shows ── */
 .auth-collage__hero {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center top;
-  border-radius: 18px;
+  border-radius: 0;
   display: block;
 }
 
-/* Floating stickers — positions unchanged */
 .auth-sticker {
   position: absolute;
   z-index: 5;
@@ -1373,7 +1330,7 @@ input, textarea { font-family: inherit; }
   white-space: nowrap;
 }
 
-/* ── Vertical divider between columns ── */
+/* ── Vertical divider ── */
 .auth-col-divider {
   width: 1px;
   align-self: stretch;
@@ -1381,7 +1338,7 @@ input, textarea { font-family: inherit; }
   flex-shrink: 0;
 }
 
-/* ── RIGHT column (form) — matches real Instagram ~460px panel ── */
+/* ── RIGHT column ── */
 .auth-right {
   width: 500px;
   max-width: 500px;
@@ -1405,7 +1362,6 @@ input, textarea { font-family: inherit; }
   text-align: left;
 }
 
-/* Form and all its siblings share the same width */
 .auth-right form,
 .auth-forgot,
 .auth-form-gap,
@@ -1439,7 +1395,7 @@ input, textarea { font-family: inherit; }
   font-size: 14px;
 }
 
-/* Password wrapper (input + show/hide toggle) */
+/* ── Password wrapper ── */
 .auth-pw-wrap {
   position: relative;
   width: 100%;
@@ -1462,6 +1418,62 @@ input, textarea { font-family: inherit; }
   cursor: pointer;
   padding: 0;
   font-family: inherit;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FLOATING LABEL INPUTS (login page)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Outer wrapper that holds label + input (or label + pw-wrap) */
+.auth-float-wrap {
+  position: relative;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+/* Override the input inside a float-wrap: make room for the floating label */
+.auth-float-wrap .auth-input {
+  margin-bottom: 0;
+  padding: 20px 16px 6px;
+  height: 52px;
+}
+
+/* Password input inside float-wrap needs right padding for the Show/Hide btn */
+.auth-float-wrap .auth-pw-wrap .auth-input {
+  padding: 20px 52px 6px 16px;
+}
+
+/* The floating label itself */
+.auth-float-label {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: var(--text-secondary);
+  pointer-events: none;
+  transition: top .15s ease, font-size .15s ease, transform .15s ease;
+  line-height: 1;
+  white-space: nowrap;
+  z-index: 1;
+}
+
+/* When the wrapper has the .is-active class (focused or filled), label floats up */
+.auth-float-wrap.is-active .auth-float-label {
+  top: 10px;
+  transform: none;
+  font-size: 11px;
+}
+
+/* pw-wrap inside float-wrap: remove its own bottom margin */
+.auth-float-wrap .auth-pw-wrap {
+  margin-bottom: 0;
+}
+
+/* Show/Hide toggle: needs to be vertically centred relative to the taller input */
+.auth-float-wrap .auth-pw-wrap .auth-pw-toggle {
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 /* ── Log in button ── */
@@ -1489,7 +1501,6 @@ input, textarea { font-family: inherit; }
   opacity: 1;
 }
 
-/* Button spinner */
 .auth-btn-spinner {
   display: inline-block;
   width: 16px;
@@ -1511,14 +1522,12 @@ input, textarea { font-family: inherit; }
   cursor: pointer;
   display: block;
   text-align: center;
-  /* Invisible by default — same shape as other buttons but transparent */
   background: transparent;
   border: 1px solid transparent;
   color: var(--text-secondary);
   margin-top: 6px;
   transition: background var(--trans-fast), border-color var(--trans-fast), color var(--trans-fast);
 }
-/* On hover: border appears making it look like the other pill buttons */
 .auth-forgot:hover {
   background: var(--bg);
   border-color: var(--border);
@@ -1526,7 +1535,6 @@ input, textarea { font-family: inherit; }
   text-decoration: none;
 }
 
-/* Larger gap between forgot and FB button — pushes FB+Create lower */
 .auth-form-gap { height: 20px; display: block; }
 
 /* ── Facebook button ── */
@@ -1573,7 +1581,6 @@ input, textarea { font-family: inherit; }
 .auth-create-btn:hover { background: rgba(8,102,255,.05); }
 
 /* ── Meta wordmark ── */
-/* Meta wordmark — full SVG with infinity mark, smaller size */
 .auth-meta {
   display: block;
   margin: 0 auto;
@@ -1606,32 +1613,44 @@ input, textarea { font-family: inherit; }
 }
 
 /* ── Responsive ── */
-
-/* Scale down at mid-range widths before full collapse */
-/* Scale collage at 1200-1400px where left col can be tight */
 @media (max-width: 1300px) and (min-width: 1101px) {
   .auth-left { padding: 100px 24px 40px 32px; }
   .auth-left__inner { max-width: 420px; }
-  .auth-collage { max-width: 420px; height: 360px; }
-  .auth-headline { font-size: 32px; }
+  .auth-collage { max-width: 420px; height: 420px; }
+  .auth-headline { font-size: clamp(30px, 3.5vw, 52px); }
 }
 
 @media (max-width: 1100px) and (min-width: 936px) {
   .auth-left { padding: 100px 16px 32px 20px; }
   .auth-left__inner { max-width: 300px; }
-  .auth-collage { max-width: 300px; height: 300px; }
+  .auth-collage { max-width: 300px; height: 340px; }
   .auth-headline { font-size: 26px; }
   .auth-topbar__icon { width: 40px; height: 40px; }
   .auth-right { width: 360px; max-width: 360px; padding: 40px 20px; }
 }
 
+/* ── CHANGED: mobile — hide left col, centre logo ── */
 @media (max-width: 935px) {
   .auth-left       { display: none; }
   .auth-col-divider { display: none; }
+
+  /* Centre the IG icon on mobile */
+  .auth-topbar {
+    position: static;
+    display: flex;
+    justify-content: center;
+    padding: 32px 0 0;
+    width: 100%;
+  }
+  .auth-topbar__icon {
+    width: 56px;
+    height: 56px;
+  }
+
   .auth-right {
     width: 100%;
     max-width: 460px;
-    padding: 60px 24px;
+    padding: 24px 24px 60px;
   }
   .auth-right form,
   .auth-right__title,
@@ -1661,10 +1680,9 @@ input, textarea { font-family: inherit; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SIGNUP PAGE  —  New multi-step Instagram-style signup
+   SIGNUP PAGE
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── Page shell ── */
 .su-page {
   min-height: 100vh;
   background: #fff;
@@ -1674,7 +1692,6 @@ input, textarea { font-family: inherit; }
   padding: 0 0 40px;
 }
 
-/* ── Card — plain white column, no card shadow (matches reference) ── */
 .su-card {
   width: 100%;
   max-width: 530px;
@@ -1682,7 +1699,6 @@ input, textarea { font-family: inherit; }
   overflow: hidden;
 }
 
-/* ── Topbar: back arrow left + Meta wordmark centre ── */
 .su-topbar {
   position: relative;
   display: flex;
@@ -1707,7 +1723,6 @@ input, textarea { font-family: inherit; }
 }
 .su-back-btn:hover { background: var(--border-light); }
 
-/* ── Header text ── */
 .su-title {
   font-size: 24px;
   font-weight: 700;
@@ -1723,10 +1738,8 @@ input, textarea { font-family: inherit; }
   line-height: 1.5;
 }
 
-/* ── OR divider (kept for potential reuse) ── */
 .su-divider { display: none; }
 
-/* ── Header text ── */
 .su-title {
   font-size: 24px;
   font-weight: 700;
@@ -1742,13 +1755,10 @@ input, textarea { font-family: inherit; }
   line-height: 1.5;
 }
 
-/* ── Divider (hidden — kept for compat) ── */
 .su-divider { display: none; }
 
-/* ── Field wrapper ── */
 .su-field { margin-bottom: 12px; }
 
-/* Shared label above dropdowns / birthday */
 .su-field__label {
   display: block;
   font-size: 14px;
@@ -1757,7 +1767,6 @@ input, textarea { font-family: inherit; }
   margin-bottom: 6px;
 }
 
-/* ── Floating label input ── */
 .su-float-wrap {
   position: relative;
   border: 1.5px solid #dbdbdb;
@@ -1772,7 +1781,6 @@ input, textarea { font-family: inherit; }
 .su-float-wrap--focus { border-color: #3897f0; }
 .su-float-wrap--error { border-color: #ed4956; }
 
-/* Floating placeholder label */
 .su-float-label {
   position: absolute;
   left: 12px;
@@ -1785,7 +1793,6 @@ input, textarea { font-family: inherit; }
   line-height: 1;
   white-space: nowrap;
 }
-/* Floated state — moves up, shrinks */
 .su-float-label--up {
   top: 10px;
   transform: none;
@@ -1793,7 +1800,6 @@ input, textarea { font-family: inherit; }
   color: #8e8e8e;
 }
 
-/* Actual input */
 .su-float-input {
   flex: 1;
   border: none;
@@ -1806,7 +1812,6 @@ input, textarea { font-family: inherit; }
   min-width: 0;
 }
 
-/* Error row with icon */
 .su-field__error {
   display: flex;
   align-items: flex-start;
@@ -1823,7 +1828,6 @@ input, textarea { font-family: inherit; }
   color: #8e8e8e;
 }
 
-/* Eye button */
 .su-eye-btn {
   flex-shrink: 0;
   margin-right: 10px;
@@ -1838,7 +1842,6 @@ input, textarea { font-family: inherit; }
 }
 .su-eye-btn:hover { color: #262626; }
 
-/* ── Notice below email ── */
 .su-notice {
   margin: -4px 0 16px;
   font-size: 13px;
@@ -1846,7 +1849,6 @@ input, textarea { font-family: inherit; }
   line-height: 1.5;
 }
 
-/* ── Birthday dropdowns ── */
 .su-dob-row {
   display: flex;
   gap: 10px;
@@ -1883,7 +1885,6 @@ input, textarea { font-family: inherit; }
   color: var(--text-secondary);
 }
 
-/* ── Help icon circle ── */
 .su-help-icon {
   display: inline-flex;
   align-items: center;
@@ -1900,7 +1901,6 @@ input, textarea { font-family: inherit; }
   vertical-align: middle;
 }
 
-/* ── Legal paragraphs ── */
 .su-legal {
   font-size: 13px;
   color: #000;
@@ -1920,7 +1920,6 @@ input, textarea { font-family: inherit; }
 }
 .su-link:hover { text-decoration: underline; }
 
-/* ── Submit button — always blue, opacity on disabled (loading only) ── */
 .su-submit-btn {
   width: 100%;
   padding: 14px;
@@ -1942,7 +1941,6 @@ input, textarea { font-family: inherit; }
 .su-submit-btn:disabled { opacity: .6; cursor: not-allowed; }
 .su-submit-btn:not(:disabled):hover { opacity: .92; }
 
-/* ── "I already have an account" link-button ── */
 .su-login-btn {
   display: block;
   width: 100%;
@@ -1959,7 +1957,6 @@ input, textarea { font-family: inherit; }
 }
 .su-login-btn:hover { background: var(--border-light); }
 
-/* ── Loading spinner inside button ── */
 .su-btn-spinner {
   display: inline-block;
   width: 20px;
@@ -1970,7 +1967,6 @@ input, textarea { font-family: inherit; }
   animation: spin .7s linear infinite;
 }
 
-/* ── Confirmation screen ── */
 .su-confirm-icon {
   width: 72px;
   height: 72px;
@@ -1990,7 +1986,6 @@ input, textarea { font-family: inherit; }
   animation: spin .8s linear infinite;
 }
 
-/* ── Footer ── */
 .su-footer {
   padding: 20px 24px;
   border-top: 1px solid var(--border-light);
@@ -2011,7 +2006,6 @@ input, textarea { font-family: inherit; }
   margin-top: 4px;
 }
 
-/* ── Responsive ── */
 @media (max-width: 560px) {
   .su-page { padding: 0; align-items: stretch; }
   .su-card { min-height: 100vh; }
