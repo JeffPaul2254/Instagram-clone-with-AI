@@ -1259,13 +1259,13 @@ input, textarea { font-family: inherit; }
 
 /* ── CHANGED: headline font size enlarged to match Instagram's ~65px ── */
 .auth-headline {
-  font-size: clamp(18px, 2.5vw, 36px);
+  font-size: 54px;
   font-weight: 400;
-  line-height: 1.18;
+  line-height: 1.2; /* ~64.8px like Instagram */
+  letter-spacing: -1px;
   color: var(--text-primary);
-  letter-spacing: -.5px;
-  max-width: 600px; /* controls wrapping */
-  word-break: normal;
+
+  max-width: 760px; /* forces line break after "your" */
   text-align: left;
 }
 
