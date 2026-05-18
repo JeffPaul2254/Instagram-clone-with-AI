@@ -1256,8 +1256,8 @@ input, textarea { font-family: inherit; }
   z-index: 10;
 }
 .auth-topbar__icon {
-  width: 96px;
-  height: 96px;
+  width: 72px;
+  height: 72px;
   display: block;
   object-fit: contain;
   flex-shrink: 0;
@@ -1284,7 +1284,7 @@ input, textarea { font-family: inherit; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 120px 32px 40px 40px;
+  padding: 100px 32px 40px 40px;
 }
 
 /* Inner block — headline + collage tightly grouped */
@@ -1301,7 +1301,7 @@ input, textarea { font-family: inherit; }
 .auth-left__inner > .auth-headline     { margin-bottom: 28px; }
 
 .auth-headline {
-  font-size: 42px;
+  font-size: 38px;
   font-weight: 400;
   line-height: 1.3;
   color: var(--text-primary);
@@ -1310,9 +1310,9 @@ input, textarea { font-family: inherit; }
   word-break: normal;
   text-align: left;
 }
-/* No white-space:nowrap — let headline wrap naturally so it never overflows */
+/* Force line 1 to stay on its own line — headline fits in left col at this font size */
 .auth-headline__line1 {
-  display: inline;
+  display: block;
 }
 /* Real Instagram uses pink/magenta for "close friends" */
 .auth-pink   { color: #E1306C; }
@@ -1383,14 +1383,14 @@ input, textarea { font-family: inherit; }
 
 /* ── RIGHT column (form) — matches real Instagram ~460px panel ── */
 .auth-right {
-  width: 440px;
-  max-width: 440px;
+  width: 380px;
+  max-width: 380px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 40px;
+  padding: 40px 32px;
   gap: 0;
 }
 
@@ -1401,7 +1401,7 @@ input, textarea { font-family: inherit; }
   margin-bottom: 20px;
   display: block;
   width: 100%;
-  max-width: 420px;
+  max-width: 316px;
   text-align: left;
 }
 
@@ -1413,7 +1413,7 @@ input, textarea { font-family: inherit; }
 .auth-create-btn,
 .auth-meta {
   width: 100%;
-  max-width: 420px;
+  max-width: 316px;
 }
 
 /* ── Form inputs ── */
