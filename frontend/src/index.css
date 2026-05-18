@@ -1261,12 +1261,12 @@ input, textarea { font-family: inherit; }
 .auth-headline {
   font-size: clamp(16px, 2.2vw, 30px);
   font-weight: 600;
-  line-height: 1.18;
+  line-height: 1.5;
   color: var(--text-primary);
   letter-spacing: -.5px;
   max-width: 600px; /* controls wrapping */
   word-break: normal;
-  text-align: left;
+  text-align: center;
 }
 
 .auth-headline__line1 {
