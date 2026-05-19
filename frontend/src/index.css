@@ -1259,7 +1259,7 @@ input, textarea { font-family: inherit; }
 
 /* ── CHANGED: headline font size enlarged to match Instagram's ~65px ── */
 .auth-headline {
-  font-size: clamp(16px, 2.8vw, 30px);
+  font-size: clamp(20px, 2.8vw, 36px);
   font-weight: 400;
   font-family: Instagram Sans Regular !important;;
   line-height: 1.5;
@@ -1391,7 +1391,7 @@ input, textarea { font-family: inherit; }
   transition: border-color var(--trans-fast);
 }
 .auth-input:focus {
-  border-color: #0866ff;
+  border-color: #000000;
   outline: none;
 }
 .auth-input::placeholder {
