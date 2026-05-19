@@ -64,7 +64,6 @@ const FOOTER_LINKS = [
   'Contact Uploading & Non-Users','Meta Verified',
 ];
 
-// Instagram stories collage image from CDN
 const IMG = 'https://static.cdninstagram.com/rsrc.php/yJ/r/53X3pk-t2Gn.webp';
 
 export default function LoginPage() {
@@ -72,6 +71,8 @@ export default function LoginPage() {
   const [form, setForm]           = useState({ email: '', password: '' });
   const [loading, setLoading]     = useState(false);
   const [pwVisible, setPwVisible] = useState(false);
+  const [emailFocused, setEmailFocused]   = useState(false);
+  const [pwFocused,    setPwFocused]      = useState(false);
 
   const handle = e => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
@@ -91,6 +92,10 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
+
+  // label is "up" when field is focused OR has a value
+  const emailUp = emailFocused || form.email.length > 0;
+  const pwUp    = pwFocused    || form.password.length > 0;
 
   return (
     <div className="auth-page">
@@ -126,38 +131,51 @@ export default function LoginPage() {
           <span className="auth-right__title">Log into Instagram</span>
 
           <form onSubmit={submit} style={{ width: '100%' }}>
-            <input
-              name="email"
-              type="text"
-              placeholder="Mobile number, username or email"
-              value={form.email}
-              onChange={handle}
-              className="auth-input"
-              autoComplete="username"
-              required
-            />
 
-            <div className="auth-pw-wrap">
+            {/* ── Email floating label ── */}
+            <div className={`auth-float-wrap${emailUp ? ' is-active' : ''}`}>
+              <label className="auth-float-label">
+                Mobile number, username or email
+              </label>
               <input
-                name="password"
-                type={pwVisible ? 'text' : 'password'}
-                placeholder="Password"
-                value={form.password}
+                name="email"
+                type="text"
+                value={form.email}
                 onChange={handle}
+                onFocus={() => setEmailFocused(true)}
+                onBlur={() => setEmailFocused(false)}
                 className="auth-input"
-                autoComplete="current-password"
+                autoComplete="username"
                 required
               />
-              {form.password.length > 0 && (
-                <button
-                  type="button"
-                  className="auth-pw-toggle"
-                  onClick={() => setPwVisible(v => !v)}
-                  tabIndex={-1}
-                >
-                  {pwVisible ? 'Hide' : 'Show'}
-                </button>
-              )}
+            </div>
+
+            {/* ── Password floating label ── */}
+            <div className={`auth-float-wrap${pwUp ? ' is-active' : ''}`}>
+              <label className="auth-float-label">Password</label>
+              <div className="auth-pw-wrap">
+                <input
+                  name="password"
+                  type={pwVisible ? 'text' : 'password'}
+                  value={form.password}
+                  onChange={handle}
+                  onFocus={() => setPwFocused(true)}
+                  onBlur={() => setPwFocused(false)}
+                  className="auth-input"
+                  autoComplete="current-password"
+                  required
+                />
+                {form.password.length > 0 && (
+                  <button
+                    type="button"
+                    className="auth-pw-toggle"
+                    onClick={() => setPwVisible(v => !v)}
+                    tabIndex={-1}
+                  >
+                    {pwVisible ? 'Hide' : 'Show'}
+                  </button>
+                )}
+              </div>
             </div>
 
             <button
