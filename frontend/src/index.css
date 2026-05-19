@@ -1261,7 +1261,6 @@ input, textarea { font-family: inherit; }
 .auth-headline {
   font-size: clamp(20px, 2.8vw, 36px);
   font-weight: 400;
-  font-family: Instagram Sans Regular !important;;
   line-height: 1.5;
   color: var(--text-primary);
   letter-spacing: -.5px;
