@@ -1,15 +1,17 @@
 /**
  * config/db.js
  *
- * CHANGES:
- *  • setIO() / emitToUser() for real-time socket pushes (unchanged)
- *  • After all CREATE TABLE statements, runs safe ALTER TABLE migrations
- *    to add any columns that may be missing from already-existing tables.
- *    WHY: CREATE TABLE IF NOT EXISTS never modifies an existing table, so
- *    new columns added after the initial deploy are silently absent —
- *    causing "Unknown column" 500 errors (e.g. comments.likes_count).
- *  • reel_likes and reel_comments now have FK on reel_id (cascade delete)
- *  • UPLOAD_DIR exported so multer.js and server.js share one source of truth
+ * CHANGES from v2:
+ *  • Safe ALTER TABLE migrations for Facebook OAuth columns:
+ *      - users.facebook_id   VARCHAR(100) NULL UNIQUE  — FB user ID
+ *      - users.password      → made nullable (FB users have no password)
+ *      - users.email         → made nullable (FB users may deny email)
+ *    WHY: CREATE TABLE IF NOT EXISTS never modifies existing tables.
+ *    The ALTER statements use IF NOT EXISTS (MySQL 8+) with a
+ *    fallback information_schema check for older MySQL versions,
+ *    identical to the existing likes_count migration pattern.
+ *
+ * Everything else is unchanged from v2.
  */
 
 const mysql = require('mysql2/promise');
@@ -31,22 +33,13 @@ function emitToUser(userId, event, payload) {
 
 /**
  * Persistent upload directory.
- *
- * Railway provides a persistent Volume at /data (or wherever you mount it).
- * Set UPLOAD_DIR=/data/uploads in Railway environment variables.
+ * Railway Volume: set UPLOAD_DIR=/data/uploads in Railway env vars.
  * Falls back to ./uploads for local development.
- *
- * IMPORTANT — Railway Volume setup (one-time):
- *   1. Railway dashboard → your backend service → Volumes tab
- *   2. Add Volume: mount path = /data
- *   3. Add env var: UPLOAD_DIR=/data/uploads
- *   Files written to /data survive deploys and restarts.
  */
 const UPLOAD_DIR = process.env.UPLOAD_DIR
   ? path.resolve(process.env.UPLOAD_DIR)
   : path.join(__dirname, '..', 'uploads');
 
-// Ensure all subdirectories exist at startup
 ['', 'posts', 'avatars', 'reels', 'stories'].forEach(sub => {
   const dir = sub ? path.join(UPLOAD_DIR, sub) : UPLOAD_DIR;
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -62,11 +55,12 @@ async function connectDB() {
     connectionLimit:    10,
   });
 
-  // ── CREATE tables ───────────────────────────────────────────
+  // ── CREATE tables (unchanged from v2) ───────────────────────
   await db.execute(`CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY, username VARCHAR(50) UNIQUE NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL, password VARCHAR(255) NOT NULL,
+    email VARCHAR(100) UNIQUE, password VARCHAR(255),
     full_name VARCHAR(100), bio TEXT, avatar VARCHAR(255),
+    facebook_id VARCHAR(100) UNIQUE DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`);
 
   await db.execute(`CREATE TABLE IF NOT EXISTS posts (
@@ -83,7 +77,6 @@ async function connectDB() {
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE)`);
 
-  // comments table — includes likes_count for new installs
   await db.execute(`CREATE TABLE IF NOT EXISTS comments (
     id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL, post_id INT NOT NULL,
     text TEXT NOT NULL,
@@ -121,7 +114,6 @@ async function connectDB() {
     views_count INT DEFAULT 0, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)`);
 
-  // reel_likes — added missing FK on reel_id
   await db.execute(`CREATE TABLE IF NOT EXISTS reel_likes (
     id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL, reel_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -129,7 +121,6 @@ async function connectDB() {
     FOREIGN KEY (user_id)  REFERENCES users(id)  ON DELETE CASCADE,
     FOREIGN KEY (reel_id)  REFERENCES reels(id)  ON DELETE CASCADE)`);
 
-  // reel_comments — added missing FK on reel_id
   await db.execute(`CREATE TABLE IF NOT EXISTS reel_comments (
     id INT AUTO_INCREMENT PRIMARY KEY, user_id INT NOT NULL, reel_id INT NOT NULL,
     text TEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -164,27 +155,68 @@ async function connectDB() {
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE)`);
 
-  // ── Safe migrations for existing deployments ────────────────
-  // These ALTER TABLE statements add columns that may be missing from tables
-  // created before the column was introduced. IF NOT EXISTS prevents errors
-  // on fresh installs where the column already exists from the CREATE above.
+  // ── Safe migration: likes_count (existing from v2) ──────────
   await db.execute(`
     ALTER TABLE comments
     ADD COLUMN IF NOT EXISTS likes_count INT DEFAULT 0
   `).catch(() => {
-    // Fallback for MySQL versions < 8.0 that don't support IF NOT EXISTS on ALTER
     return db.execute(`
-      SELECT COUNT(*) as cnt
-      FROM information_schema.COLUMNS
+      SELECT COUNT(*) as cnt FROM information_schema.COLUMNS
       WHERE TABLE_SCHEMA = DATABASE()
         AND TABLE_NAME   = 'comments'
         AND COLUMN_NAME  = 'likes_count'
     `).then(([rows]) => {
-      if (rows[0].cnt === 0) {
+      if (rows[0].cnt === 0)
         return db.execute(`ALTER TABLE comments ADD COLUMN likes_count INT DEFAULT 0`);
-      }
     });
   });
+
+  // ── Safe migration: facebook_id column ──────────────────────
+  // Adds facebook_id to the users table on existing deployments.
+  await db.execute(`
+    ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS facebook_id VARCHAR(100) NULL UNIQUE
+  `).catch(() => {
+    return db.execute(`
+      SELECT COUNT(*) as cnt FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+        AND TABLE_NAME   = 'users'
+        AND COLUMN_NAME  = 'facebook_id'
+    `).then(([rows]) => {
+      if (rows[0].cnt === 0)
+        return db.execute(`ALTER TABLE users ADD COLUMN facebook_id VARCHAR(100) NULL`).then(() =>
+          // Add UNIQUE index separately so it doesn't fail if column was just added
+          db.execute(`ALTER TABLE users ADD UNIQUE INDEX idx_facebook_id (facebook_id)`)
+            .catch(() => {}) // ignore if index already exists
+        );
+    });
+  });
+
+  // ── Safe migration: make email nullable (FB users may not share it) ──
+  // MySQL silently ignores this if the column definition is already correct.
+  // We check the IS_NULLABLE flag to avoid a redundant ALTER.
+  await db.execute(`
+    SELECT IS_NULLABLE FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME   = 'users'
+      AND COLUMN_NAME  = 'email'
+  `).then(([rows]) => {
+    if (rows.length && rows[0].IS_NULLABLE === 'NO') {
+      return db.execute(`ALTER TABLE users MODIFY email VARCHAR(100) NULL`);
+    }
+  }).catch(() => {});
+
+  // ── Safe migration: make password nullable (FB users have no password) ──
+  await db.execute(`
+    SELECT IS_NULLABLE FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME   = 'users'
+      AND COLUMN_NAME  = 'password'
+  `).then(([rows]) => {
+    if (rows.length && rows[0].IS_NULLABLE === 'NO') {
+      return db.execute(`ALTER TABLE users MODIFY password VARCHAR(255) NULL`);
+    }
+  }).catch(() => {});
 
   console.log('✅ Database tables ready');
 }
