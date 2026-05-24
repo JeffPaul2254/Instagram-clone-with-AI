@@ -1,11 +1,32 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+/**
+ * pages/LoginPage.js
+ *
+ * CHANGES from v2:
+ *  • FB_OAUTH_URL now points to our own backend (/api/auth/facebook)
+ *    instead of Instagram's hardcoded OAuth URL.
+ *    Reads REACT_APP_API_URL so it works on both local dev and Vercel.
+ *
+ *  • On mount, reads ?error= from the URL and shows the appropriate toast:
+ *      facebook_failed    → "Facebook login failed. Please try again."
+ *      facebook_cancelled → "Facebook login was cancelled."
+ *    The param is cleared from the URL immediately so refreshing doesn't
+ *    re-trigger the toast.
+ *
+ * Everything else (form, floating labels, MetaWordmark, footer) is unchanged.
+ */
+
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import axios from '../utils/axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 
-const FB_OAUTH_URL =
-  'https://www.facebook.com/login.php?next=https%3A%2F%2Fwww.facebook.com%2Foidc%2F%3Fapp_id%3D124024574287414%26redirect_uri%3Dhttps%253A%252F%252Fwww.instagram.com%252Faccounts%252Fsignupviafb%252F%26response_type%3Dcode%26scope%3Dopenid%2Bemail%2Bprofile%2Blinking%26state%3DATqVE3DzqfrscLStLaeZCe21JtIbUjlsLwK3aooXjVberzJxkFdRhqgAnJxWK-mUY_4-gctTRINF651ZimQ3IlpliuQKozdnlxHAsjl3mwHa4s1a1ebms9PsbNKIijNeoW5sEztPHPLY17iMlCkRojLYdq7bNw5uBvXMh1V0UsKKP7xw2mQNXlYPB8MCCKwHfdGdCEb-ADpGSahDyacZk5mlM-LTwIPoybzATVhWihVJ7ccRL82ZzVSB33o7IB3lnQtr7vbFEWWSHFyonMTrUUYUrg';
+// ── Facebook OAuth entry point — hits our Railway backend, not instagram.com ──
+// REACT_APP_API_URL must be set in Vercel environment variables:
+//   REACT_APP_API_URL=https://your-railway-app.up.railway.app
+const FB_OAUTH_URL = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/facebook`;
+
+// ── Sub-components (unchanged from v2) ──────────────────────────────────────
 
 function IGIcon() {
   return (
@@ -67,12 +88,31 @@ const FOOTER_LINKS = [
 const IMG = 'https://static.cdninstagram.com/rsrc.php/yJ/r/53X3pk-t2Gn.webp';
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login }  = useAuth();
+  const location   = useLocation();
   const [form, setForm]           = useState({ email: '', password: '' });
   const [loading, setLoading]     = useState(false);
   const [pwVisible, setPwVisible] = useState(false);
-  const [emailFocused, setEmailFocused]   = useState(false);
-  const [pwFocused,    setPwFocused]      = useState(false);
+  const [emailFocused, setEmailFocused] = useState(false);
+  const [pwFocused,    setPwFocused]    = useState(false);
+
+  // ── Show error toasts from Facebook OAuth redirect ───────────────────────
+  // The backend redirects to /login?error=facebook_failed (or _cancelled)
+  // when something goes wrong. Read it once on mount, then clear from URL
+  // so a page refresh doesn't re-show the toast.
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const error  = params.get('error');
+    if (error === 'facebook_failed') {
+      toast.error('Facebook login failed. Please try again.');
+    } else if (error === 'facebook_cancelled') {
+      toast('Facebook login was cancelled.', { icon: 'ℹ️' });
+    }
+    // Silently remove ?error= from the URL — no history entry added
+    if (error) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handle = e => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
@@ -93,7 +133,6 @@ export default function LoginPage() {
     }
   };
 
-  // label is "up" when field is focused OR has a value
   const emailUp = emailFocused || form.email.length > 0;
   const pwUp    = pwFocused    || form.password.length > 0;
 
@@ -197,6 +236,7 @@ export default function LoginPage() {
 
           <div className="auth-form-gap" />
 
+          {/* ── Facebook login — now points to our Railway backend ── */}
           <a href={FB_OAUTH_URL} className="auth-fb-btn" rel="noopener noreferrer">
             <FBIcon />
             Log in with Facebook
