@@ -28,6 +28,19 @@ const LINKS = {
 function validateEmail(v) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
 }
+/**
+ * Accepts international phone numbers: optional leading +,
+ * then 7–15 digits (spaces, dashes, parens stripped first).
+ * This matches what the backend looksLikePhone() function accepts.
+ */
+function validatePhone(v) {
+  const cleaned = v.trim().replace(/[\s\-().]/g, '');
+  return /^\+?\d{7,15}$/.test(cleaned);
+}
+/** Returns true if the value is a valid email OR a valid phone number */
+function validateContact(v) {
+  return validateEmail(v) || validatePhone(v);
+}
 function validateUsername(v) {
   return /^[a-zA-Z0-9._]{1,30}$/.test(v.trim());
 }
@@ -137,7 +150,7 @@ export default function SignupPage() {
 
   function validate() {
     const e = {};
-    if (!email.trim() || !validateEmail(email))
+    if (!email.trim() || !validateContact(email))
       e.email = 'Please enter a valid mobile number or email address.';
     if (!password)
       e.password = 'Enter a combination of at least six numbers, letters and punctuation marks (like ! and &).';
@@ -178,8 +191,10 @@ export default function SignupPage() {
       const message = typeof errData === 'string'
         ? errData : errData?.error || errData?.message || 'Signup failed';
       const m = String(message).toLowerCase();
-      if (m === 'username already taken' || (m.includes('username') && !m.includes('email')))
+      if (m === 'username already taken' || (m.includes('username') && !m.includes('email') && !m.includes('phone')))
         setErrors(p => ({ ...p, username:'That username is taken. Try another.' }));
+      else if (m === 'phone number already taken' || m.includes('phone'))
+        setErrors(p => ({ ...p, email:'Another account is using that phone number.' }));
       else if (m === 'email already taken' || (m.includes('email') && !m.includes('username')))
         setErrors(p => ({ ...p, email:'Another account is using that email.' }));
       else if (m.includes('username') && m.includes('email'))

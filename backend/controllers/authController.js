@@ -1,27 +1,36 @@
 /**
  * controllers/authController.js
  *
- * CHANGES from v2:
- *  • facebookRedirect  — builds the Facebook OAuth dialog URL and
- *    redirects the browser there. A CSRF `state` token is signed with
- *    JWT and sent as a query param (no server-side session needed).
- *  • facebookCallback  — handles the redirect from Facebook:
- *      1. Verifies the CSRF state token
- *      2. Exchanges the ?code for a Facebook access token
- *      3. Fetches name, email, picture from the Graph API
- *      4. Finds or creates the local user row
- *      5. Issues our own JWT and redirects to the frontend callback page
+ * CHANGES from v3 (Facebook OAuth):
+ *  • Added looksLikePhone() and normalisePhone() helpers.
+ *  • signup() detects phone vs email input and stores in the right column.
+ *  • login() now also matches users.phone so phone-signup users can log in.
+ *  • Error messages cover the phone-already-taken duplicate case.
  *
- *  All Facebook HTTP calls use Node's built-in https module —
- *  zero new dependencies required.
- *
- * Existing functions (signup, login, getMe) are unchanged.
+ * Facebook OAuth helpers (facebookRedirect, facebookCallback) are unchanged.
  */
 
 const bcrypt = require('bcryptjs');
 const jwt    = require('jsonwebtoken');
 const https  = require('https');
 const { getDB } = require('../config/db');
+
+// ── Phone helpers ─────────────────────────────────────────────────────────────
+
+/**
+ * Returns true when the string looks like a phone number.
+ * Accepts an optional leading + followed by 7–15 digits (spaces/dashes/parens
+ * stripped first).  This covers all real-world international formats.
+ */
+function looksLikePhone(value) {
+  const cleaned = value.replace(/[\s\-().]/g, '');
+  return /^\+?\d{7,15}$/.test(cleaned);
+}
+
+/** Normalise a phone string: strip spaces / dashes / parens, keep leading + */
+function normalisePhone(value) {
+  return value.replace(/[\s\-().]/g, '');
+}
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -67,35 +76,60 @@ async function uniqueUsername(db, candidate) {
   }
 }
 
-// ── Existing auth handlers (unchanged) ──────────────────────────────────────
-
-// POST /api/auth/signup
+// ── POST /api/auth/signup ─────────────────────────────────────────────────────
 async function signup(req, res) {
   try {
-    const { username, email, password, full_name } = req.body;
-    if (!username || !email || !password)
+    // Frontend sends mobile-number-or-email value under the key `email`
+    const { username, email: contactValue, password, full_name } = req.body;
+
+    if (!username || !contactValue || !password)
       return res.status(400).json({ error: 'All fields required' });
     if (password.length < 6)
       return res.status(400).json({ error: 'Password must be at least 6 characters' });
 
     const db   = getDB();
     const hash = await bcrypt.hash(password, 12);
-    const [result] = await db.execute(
-      'INSERT INTO users (username, email, password, full_name) VALUES (?, ?, ?, ?)',
-      [username.toLowerCase().trim(), email.toLowerCase().trim(), hash, full_name || '']
-    );
+
+    const isPhone = looksLikePhone(contactValue.trim());
+    let result;
+
+    if (isPhone) {
+      const phone = normalisePhone(contactValue.trim());
+      [result] = await db.execute(
+        'INSERT INTO users (username, phone, password, full_name) VALUES (?, ?, ?, ?)',
+        [username.toLowerCase().trim(), phone, hash, full_name || '']
+      );
+    } else {
+      [result] = await db.execute(
+        'INSERT INTO users (username, email, password, full_name) VALUES (?, ?, ?, ?)',
+        [username.toLowerCase().trim(), contactValue.toLowerCase().trim(), hash, full_name || '']
+      );
+    }
+
     const token = jwt.sign(
       { id: result.insertId, username },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
-    res.json({ token, user: { id: result.insertId, username, email, full_name: full_name || '' } });
+
+    res.json({
+      token,
+      user: {
+        id:        result.insertId,
+        username,
+        email:     isPhone ? null : contactValue.toLowerCase().trim(),
+        phone:     isPhone ? normalisePhone(contactValue.trim()) : null,
+        full_name: full_name || '',
+      },
+    });
   } catch (err) {
     console.error('Signup error:', err);
     if (err.code === 'ER_DUP_ENTRY') {
       const msg = (err.sqlMessage || '').toLowerCase();
       if (msg.includes('username'))
         return res.status(400).json({ error: 'Username already taken' });
+      if (msg.includes('phone'))
+        return res.status(400).json({ error: 'Phone number already taken' });
       if (msg.includes('email'))
         return res.status(400).json({ error: 'Email already taken' });
       return res.status(400).json({ error: 'Username or email already taken' });
@@ -111,10 +145,15 @@ async function login(req, res) {
     if (!email || !password)
       return res.status(400).json({ error: 'All fields required' });
 
-    const db = getDB();
+    const db        = getDB();
+    const input     = email.trim();
+    const lower     = input.toLowerCase();
+    const normPhone = normalisePhone(input);   // normalise in case user types +91 9876-543210
+
+    // Match email OR username OR phone — whichever was used at signup
     const [rows] = await db.execute(
-      'SELECT * FROM users WHERE email = ? OR username = ?',
-      [email.toLowerCase().trim(), email.toLowerCase().trim()]
+      'SELECT * FROM users WHERE email = ? OR username = ? OR phone = ?',
+      [lower, lower, normPhone]
     );
     if (!rows.length) return res.status(401).json({ error: 'Invalid credentials' });
 
