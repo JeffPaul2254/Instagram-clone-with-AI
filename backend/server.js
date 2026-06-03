@@ -131,6 +131,9 @@ connectDB()
     server.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
   })
   .catch(err => {
-    console.error('❌ Failed to start server:', err.message);
+    console.error('❌ Failed to start server:');
+    console.error('   message:', err.message);
+    console.error('   code:',    err.code);
+    console.error('   full:',    err);
     process.exit(1);
   });
