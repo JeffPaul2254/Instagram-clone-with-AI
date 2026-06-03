@@ -55,11 +55,14 @@ const UPLOAD_DIR = process.env.UPLOAD_DIR
 async function connectDB() {
   db = await mysql.createPool({
     host:               process.env.MYSQLHOST,
+    port:               parseInt(process.env.MYSQLPORT) || 3306,
     user:               process.env.MYSQLUSER,
     password:           process.env.MYSQLPASSWORD,
     database:           process.env.MYSQLDATABASE,
     waitForConnections: true,
     connectionLimit:    10,
+    ssl:                { rejectUnauthorized: false },
+    // ssl required by Aiven — all connections are encrypted
   });
 
   // ── CREATE tables ───────────────────────────────────────────
@@ -183,27 +186,6 @@ async function connectDB() {
       if (rows[0].cnt === 0) {
         return db.execute(`ALTER TABLE comments ADD COLUMN likes_count INT DEFAULT 0`);
       }
-    });
-  });
-
-  // ── Safe migration: phone column ────────────────────────────
-  // Stores an optional phone number for users who sign up with a
-  // mobile number instead of an email address.
-  // NULL = not provided; UNIQUE ensures no two accounts share a number.
-  await db.execute(`
-    ALTER TABLE users
-    ADD COLUMN IF NOT EXISTS phone VARCHAR(20) NULL UNIQUE
-  `).catch(() => {
-    return db.execute(`
-      SELECT COUNT(*) as cnt FROM information_schema.COLUMNS
-      WHERE TABLE_SCHEMA = DATABASE()
-        AND TABLE_NAME   = 'users'
-        AND COLUMN_NAME  = 'phone'
-    `).then(([rows]) => {
-      if (rows[0].cnt === 0)
-        return db.execute(`ALTER TABLE users ADD COLUMN phone VARCHAR(20) NULL`).then(() =>
-          db.execute(`ALTER TABLE users ADD UNIQUE INDEX idx_phone (phone)`).catch(() => {})
-        );
     });
   });
 

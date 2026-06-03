@@ -16,7 +16,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import axios from '../utils/axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -90,6 +90,7 @@ const IMG = 'https://static.cdninstagram.com/rsrc.php/yJ/r/53X3pk-t2Gn.webp';
 export default function LoginPage() {
   const { login }  = useAuth();
   const location   = useLocation();
+  const navigate   = useNavigate();
   const [form, setForm]           = useState({ email: '', password: '' });
   const [loading, setLoading]     = useState(false);
   const [pwVisible, setPwVisible] = useState(false);
@@ -229,7 +230,7 @@ export default function LoginPage() {
           <button
             type="button"
             className="auth-forgot"
-            onClick={() => toast('Password reset coming soon')}
+            onClick={() => navigate('/forgot-password')}
           >
             Forgot password?
           </button>

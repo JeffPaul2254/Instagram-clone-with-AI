@@ -1,19 +1,18 @@
 /**
  * routes/auth.js
  *
- * CHANGES from v2:
- *  • GET /facebook          → facebookRedirect   (starts the OAuth flow)
- *  • GET /facebook/callback → facebookCallback   (handles the FB redirect)
+ * CHANGES from v3 (Facebook OAuth):
+ *  • POST /forgot-password  → forgotPassword  (step 1: find account, send email)
+ *  • POST /reset-password   → resetPassword   (step 3: set new password via token)
  *
- * NOTE: /facebook/callback must NOT have authMiddleware — the user is
- * not yet logged in when Facebook redirects back to this endpoint.
- * The CSRF protection is handled inside facebookCallback via JWT state.
+ * Both routes have NO authMiddleware — the user is not logged in during
+ * a password reset flow by definition.
  *
- * NOTE: No rate limiter is added to /facebook routes because server.js
- * already applies authLimiter to /api/auth/login and /api/auth/signup
- * by exact path, and apiLimiter to all /api/ routes in general.
- * The Facebook endpoints inherit apiLimiter (300 req/min), which is
- * appropriate — brute-forcing OAuth codes is not feasible in practice.
+ * Rate limiting: server.js already applies authLimiter to /api/auth/login
+ * and /api/auth/signup. The two new routes fall under apiLimiter (300 req/min)
+ * which is appropriate — an attacker can't usefully brute-force a 64-char
+ * random token at that rate. For production, a tighter per-IP limiter on
+ * /forgot-password would be advisable.
  */
 
 const express        = require('express');
@@ -25,6 +24,8 @@ const {
   getMe,
   facebookRedirect,
   facebookCallback,
+  forgotPassword,
+  resetPassword,
 } = require('../controllers/authController');
 
 router.post('/signup',             signup);
@@ -34,5 +35,9 @@ router.get('/me',                  authMiddleware, getMe);
 // ── Facebook OAuth (no authMiddleware — user is not yet authenticated) ──
 router.get('/facebook',            facebookRedirect);
 router.get('/facebook/callback',   facebookCallback);
+
+// ── Password reset (no authMiddleware — user cannot log in) ────────────
+router.post('/forgot-password',    forgotPassword);
+router.post('/reset-password',     resetPassword);
 
 module.exports = router;
