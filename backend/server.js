@@ -21,6 +21,16 @@
  *   'conversations:update'→ sidebar needs refresh     (payload: none)
  */
 
+process.on('uncaughtException', err => {
+  console.error('UNCAUGHT:', err.message);
+  console.error('STACK:', err.stack);
+  process.exit(1);
+});
+process.on('unhandledRejection', reason => {
+  console.error('REJECTION:', reason);
+  process.exit(1);
+});
+
 require('dotenv').config();
 const express  = require('express');
 const cors     = require('cors');
@@ -131,10 +141,6 @@ connectDB()
     server.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
   })
   .catch(err => {
-  console.error('❌ Failed to start server:');
-  console.error('   message:', err.message);
-  console.error('   code:',    err.code);
-  console.error('   errno:',   err.errno);
-  console.error('   full error:', JSON.stringify(err, null, 2));
-  process.exit(1);
-});
+    console.error('❌ Failed to start server:', err.message);
+    process.exit(1);
+  });
