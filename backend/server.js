@@ -1,3 +1,15 @@
+process.on('uncaughtException', err => {
+  console.error('=== UNCAUGHT EXCEPTION ===');
+  console.error(err.message);
+  console.error(err.stack);
+  process.exit(1);
+});
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('=== UNHANDLED REJECTION ===');
+  console.error(reason);
+  process.exit(1);
+});
+
 /**
  * server.js
  *
@@ -20,16 +32,6 @@
  *   'notification:count'  → updated unread count      (payload: { count })
  *   'conversations:update'→ sidebar needs refresh     (payload: none)
  */
-
-process.on('uncaughtException', err => {
-  console.error('UNCAUGHT:', err.message);
-  console.error('STACK:', err.stack);
-  process.exit(1);
-});
-process.on('unhandledRejection', reason => {
-  console.error('REJECTION:', reason);
-  process.exit(1);
-});
 
 require('dotenv').config();
 const express  = require('express');
@@ -136,11 +138,23 @@ app.use('/api/reels',         reelRoutes);
 app.use('/api/stories',       storyRoutes);
 
 // ── Start ─────────────────────────────────────────────────────
-connectDB()
-  .then(() => {
-    server.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
-  })
-  .catch(err => {
-    console.error('❌ Failed to start server:', err.message);
+(async () => {
+  try {
+    console.log('==> Connecting to database...');
+    console.log('    host:', process.env.MYSQLHOST);
+    console.log('    port:', process.env.MYSQLPORT);
+    console.log('    user:', process.env.MYSQLUSER);
+    console.log('    database:', process.env.MYSQLDATABASE);
+    await connectDB();
+    console.log('==> Database connected successfully');
+    server.listen(PORT, () => console.log('🚀 Server running on port ' + PORT));
+  } catch (err) {
+    console.error('=== STARTUP FAILED ===');
+    console.error('message:', err.message);
+    console.error('code:',    err.code);
+    console.error('errno:',   err.errno);
+    console.error('sqlState:', err.sqlState);
+    console.error('full:', JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
     process.exit(1);
-  });
+  }
+})();
