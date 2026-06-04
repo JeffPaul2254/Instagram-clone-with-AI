@@ -62,6 +62,7 @@ async function connectDB() {
     waitForConnections: true,
     connectionLimit:    10,
     ssl:                { rejectUnauthorized: false },
+    // ssl required by Aiven — all connections are encrypted
   });
 
   // ── CREATE tables ───────────────────────────────────────────

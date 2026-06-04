@@ -603,4 +603,3 @@ async function sendResetEmail(toEmail, displayName, username, resetLink) {
 }
 
 module.exports = { signup, login, getMe, facebookRedirect, facebookCallback, forgotPassword, resetPassword };
-
