@@ -189,6 +189,61 @@ async function connectDB() {
     });
   });
 
+  // ── password_reset_tokens table ────────────────────────────
+  await db.execute(`CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id         INT AUTO_INCREMENT PRIMARY KEY,
+    user_id    INT NOT NULL,
+    token      VARCHAR(255) NOT NULL UNIQUE,
+    expires_at DATETIME NOT NULL,
+    used       TINYINT(1) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  )`);
+
+  // ── Safe migration: phone column ─────────────────────────────
+  await db.execute(`
+    SELECT COUNT(*) as cnt FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME   = 'users'
+      AND COLUMN_NAME  = 'phone'
+  `).then(([rows]) => {
+    if (rows[0].cnt === 0)
+      return db.execute(`ALTER TABLE users ADD COLUMN phone VARCHAR(20) NULL`);
+  }).catch(() => {});
+
+  // ── Safe migration: facebook_id column ───────────────────────
+  await db.execute(`
+    SELECT COUNT(*) as cnt FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME   = 'users'
+      AND COLUMN_NAME  = 'facebook_id'
+  `).then(([rows]) => {
+    if (rows[0].cnt === 0)
+      return db.execute(`ALTER TABLE users ADD COLUMN facebook_id VARCHAR(100) NULL`);
+  }).catch(() => {});
+
+  // ── Safe migration: make email nullable ──────────────────────
+  await db.execute(`
+    SELECT IS_NULLABLE FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME   = 'users'
+      AND COLUMN_NAME  = 'email'
+  `).then(([rows]) => {
+    if (rows.length && rows[0].IS_NULLABLE === 'NO')
+      return db.execute(`ALTER TABLE users MODIFY email VARCHAR(100) NULL`);
+  }).catch(() => {});
+
+  // ── Safe migration: make password nullable ───────────────────
+  await db.execute(`
+    SELECT IS_NULLABLE FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME   = 'users'
+      AND COLUMN_NAME  = 'password'
+  `).then(([rows]) => {
+    if (rows.length && rows[0].IS_NULLABLE === 'NO')
+      return db.execute(`ALTER TABLE users MODIFY password VARCHAR(255) NULL`);
+  }).catch(() => {});
+
   console.log('✅ Database tables ready');
 }
 
