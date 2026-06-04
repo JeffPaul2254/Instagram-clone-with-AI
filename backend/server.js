@@ -1,12 +1,10 @@
 process.on('uncaughtException', err => {
-  console.error('=== UNCAUGHT EXCEPTION ===');
-  console.error(err.message);
-  console.error(err.stack);
+  console.error('UNCAUGHT:', err.message);
+  console.error('STACK:', err.stack);
   process.exit(1);
 });
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('=== UNHANDLED REJECTION ===');
-  console.error(reason);
+process.on('unhandledRejection', reason => {
+  console.error('REJECTION:', reason);
   process.exit(1);
 });
 
@@ -140,21 +138,12 @@ app.use('/api/stories',       storyRoutes);
 // ── Start ─────────────────────────────────────────────────────
 (async () => {
   try {
-    console.log('==> Connecting to database...');
-    console.log('    host:', process.env.MYSQLHOST);
-    console.log('    port:', process.env.MYSQLPORT);
-    console.log('    user:', process.env.MYSQLUSER);
-    console.log('    database:', process.env.MYSQLDATABASE);
+    console.log('Connecting to DB at', process.env.MYSQLHOST, 'port', process.env.MYSQLPORT);
     await connectDB();
-    console.log('==> Database connected successfully');
-    server.listen(PORT, () => console.log('🚀 Server running on port ' + PORT));
+    console.log('DB connected');
+    server.listen(PORT, () => console.log('Server running on port ' + PORT));
   } catch (err) {
-    console.error('=== STARTUP FAILED ===');
-    console.error('message:', err.message);
-    console.error('code:',    err.code);
-    console.error('errno:',   err.errno);
-    console.error('sqlState:', err.sqlState);
-    console.error('full:', JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+    console.error('STARTUP FAILED:', err.message, '| code:', err.code);
     process.exit(1);
   }
 })();
