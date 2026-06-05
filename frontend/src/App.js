@@ -38,6 +38,8 @@ import MessagesPage          from './pages/MessagesPage';
 import ReelsPage             from './pages/ReelsPage';
 import PostDetailPage        from './pages/PostDetailPage';
 import FacebookCallbackPage  from './pages/FacebookCallbackPage';
+import ForgotPasswordPage   from './pages/ForgotPasswordPage';
+import ResetPasswordPage    from './pages/ResetPasswordPage';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -68,6 +70,17 @@ function AppRoutes() {
         Must be declared BEFORE /:username to prevent "auth" matching as username.
       */}
       <Route path="/auth/facebook/callback" element={<FacebookCallbackPage />} />
+
+      {/*
+        ── Password reset routes ──
+        No PublicRoute / PrivateRoute wrapper:
+        - /forgot-password: must be reachable when logged out (and harmless when logged in)
+        - /reset-password:  token links arrive from email — user is never logged in
+        Both are declared before /:username so "forgot-password" and
+        "reset-password" are never mistaken for usernames.
+      */}
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password"  element={<ResetPasswordPage />} />
 
       {/* ── Private app routes ── */}
       <Route path="/"                 element={<PrivateRoute><HomePage /></PrivateRoute>} />
