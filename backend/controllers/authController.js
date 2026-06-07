@@ -375,7 +375,7 @@ async function facebookCallback(req, res) {
  *  1. Look up the user by email, username, or phone
  *  2. Generate a cryptographically random token (64 hex chars)
  *  3. Store it in password_reset_tokens with a 1-hour expiry
- *  4. Send a reset email via nodemailer
+ *  4. Send a reset email via Resend HTTPS API
  *
  * SECURITY: Always responds with the same success message whether or not the
  * account exists — prevents user enumeration.
@@ -499,92 +499,50 @@ async function resetPassword(req, res) {
 
 // ── Email helper ──────────────────────────────────────────────────────────────
 /**
- * Sends the password-reset email.
- * Uses nodemailer with SMTP credentials from environment variables.
- * For Gmail: set EMAIL_USER and EMAIL_PASS (App Password, not account password).
+ * Sends the password-reset email via Resend HTTPS API.
+ * Resend works on Render free tier — uses port 443 (HTTPS), not SMTP ports.
  *
- * Required env vars (add to Railway):
- *   EMAIL_USER  — e.g. yourapp@gmail.com
- *   EMAIL_PASS  — Gmail App Password (16 chars, no spaces)
- *   EMAIL_FROM  — display name + address, e.g. "Instagram Clone <yourapp@gmail.com>"
- *
- * The email mirrors the real Instagram reset email layout shown in the screenshots.
+ * Required env vars (add to Render):
+ *   RESEND_API_KEY — from resend.com dashboard (starts with re_)
+ *   EMAIL_FROM     — verified sender address, e.g. "Instagram <you@yourdomain.com>"
+ *                    OR use "Instagram <onboarding@resend.dev>" for testing
  */
 async function sendResetEmail(toEmail, displayName, username, resetLink) {
-  const nodemailer = require('nodemailer');
+  // Uses Resend HTTPS API — works on Render free tier.
+  // Render blocks outbound SMTP (ports 465/587), so nodemailer/Gmail SMTP
+  // times out. Resend sends over port 443 (HTTPS) which is always open.
+  const https = require('https');
 
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
-
-  const FROM    = process.env.EMAIL_FROM || `Instagram <${process.env.EMAIL_USER}>`;
   const subject = `${username}, we've made it easy to get back on Instagram`;
 
-  const html = `
-<!DOCTYPE html>
+  const html = `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#fafafa;font-family:Arial,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#fafafa;padding:40px 0;">
     <tr><td align="center">
-      <table width="468" cellpadding="0" cellspacing="0" style="background:#fff;border:1px solid #dbdbdb;border-radius:4px;overflow:hidden;max-width:468px;width:100%;">
-        <!-- Header -->
+      <table width="468" cellpadding="0" cellspacing="0" style="background:#fff;border:1px solid #dbdbdb;border-radius:4px;max-width:468px;width:100%;">
         <tr><td align="center" style="padding:30px 40px 20px;">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Instagram_logo.svg/180px-Instagram_logo.svg.png"
-               alt="Instagram" width="110" style="display:block;margin:0 auto 20px;" />
-          <p style="margin:0;font-size:14px;color:#262626;line-height:1.6;">
-            Hi ${displayName},
-          </p>
+          <p style="margin:0;font-size:14px;color:#262626;line-height:1.6;">Hi ${displayName},</p>
           <p style="margin:12px 0 0;font-size:14px;color:#262626;line-height:1.6;">
             Sorry to hear you're having trouble logging into Instagram.
             We got a message that you forgot your password. If this was you,
             you can get right back into your account or reset your password now.
           </p>
         </td></tr>
-        <!-- Log in button -->
         <tr><td align="center" style="padding:10px 40px;">
-          <a href="${resetLink}"
-             style="display:block;background:#0095f6;color:#fff;text-decoration:none;
-                    font-size:14px;font-weight:600;padding:12px 24px;border-radius:4px;
-                    text-align:center;">
+          <a href="${resetLink}" style="display:block;background:#0095f6;color:#fff;text-decoration:none;font-size:14px;font-weight:600;padding:12px 24px;border-radius:4px;text-align:center;">
             Log in as ${username}
           </a>
         </td></tr>
-        <!-- Reset button -->
         <tr><td align="center" style="padding:8px 40px 24px;">
-          <a href="${resetLink}"
-             style="display:block;background:#0095f6;color:#fff;text-decoration:none;
-                    font-size:14px;font-weight:600;padding:12px 24px;border-radius:4px;
-                    text-align:center;">
+          <a href="${resetLink}" style="display:block;background:#0095f6;color:#fff;text-decoration:none;font-size:14px;font-weight:600;padding:12px 24px;border-radius:4px;text-align:center;">
             Reset your password
           </a>
         </td></tr>
-        <!-- Disclaimer -->
         <tr><td style="padding:0 40px 24px;">
           <p style="margin:0;font-size:13px;color:#8e8e8e;line-height:1.6;">
-            If you didn't request a login link or a password reset, you can ignore
-            this message and
-            <a href="#" style="color:#385185;text-decoration:none;">learn more about why you may have received it</a>.
-          </p>
-          <p style="margin:12px 0 0;font-size:13px;color:#8e8e8e;line-height:1.6;">
-            Only people who know your Instagram password or click the login link
-            in this email can log into your account.
-          </p>
-        </td></tr>
-        <!-- Divider -->
-        <tr><td style="border-top:1px solid #dbdbdb;padding:16px 40px 8px;text-align:center;">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Meta_Platforms_Inc._logo.svg/200px-Meta_Platforms_Inc._logo.svg.png"
-               alt="Meta" width="60" style="opacity:0.6;" />
-        </td></tr>
-        <!-- Footer -->
-        <tr><td style="padding:4px 40px 24px;text-align:center;">
-          <p style="margin:0;font-size:11px;color:#8e8e8e;line-height:1.6;">
-            © Instagram. Meta Platforms, Inc., 1601 Willow Road, Menlo Park, CA 94025<br>
-            This message was sent to ${toEmail} and intended for ${username}.
+            If you didn't request a login link or a password reset, you can ignore this message.
           </p>
         </td></tr>
       </table>
@@ -593,13 +551,42 @@ async function sendResetEmail(toEmail, displayName, username, resetLink) {
 </body>
 </html>`;
 
-  await transporter.sendMail({
-    from:    FROM,
-    to:      toEmail,
+  const text = `Hi ${displayName},\n\nReset your Instagram password: ${resetLink}\n\nThis link expires in 1 hour.\n\nIf you didn't request this, ignore this email.`;
+
+  const payload = JSON.stringify({
+    from:    process.env.EMAIL_FROM || 'Instagram <onboarding@resend.dev>',
+    to:      [toEmail],
     subject,
     html,
-    text: `Hi ${displayName},\n\nReset your Instagram password: ${resetLink}\n\nThis link expires in 1 hour.\n\nIf you didn't request this, ignore this email.`,
+    text,
+  });
+
+  return new Promise((resolve, reject) => {
+    const req = https.request({
+      hostname: 'api.resend.com',
+      path:     '/emails',
+      method:   'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+        'Content-Type':  'application/json',
+        'Content-Length': Buffer.byteLength(payload),
+      },
+    }, (res) => {
+      let body = '';
+      res.on('data', chunk => body += chunk);
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve(JSON.parse(body));
+        } else {
+          reject(new Error(`Resend API error ${res.statusCode}: ${body}`));
+        }
+      });
+    });
+    req.on('error', reject);
+    req.write(payload);
+    req.end();
   });
 }
+
 
 module.exports = { signup, login, getMe, facebookRedirect, facebookCallback, forgotPassword, resetPassword };
