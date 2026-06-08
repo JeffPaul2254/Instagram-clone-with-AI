@@ -26,6 +26,7 @@ const {
   facebookCallback,
   forgotPassword,
   resetPassword,
+  resetLogin,
 } = require('../controllers/authController');
 
 router.post('/signup',             signup);
@@ -39,5 +40,7 @@ router.get('/facebook/callback',   facebookCallback);
 // ── Password reset (no authMiddleware — user cannot log in) ────────────
 router.post('/forgot-password',    forgotPassword);
 router.post('/reset-password',     resetPassword);
+router.get('/reset-login',         resetLogin);
+// GET /api/auth/reset-login?token=... — "Log in as username" button in email
 
 module.exports = router;

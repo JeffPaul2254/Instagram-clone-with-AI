@@ -38,6 +38,7 @@ import MessagesPage          from './pages/MessagesPage';
 import ReelsPage             from './pages/ReelsPage';
 import PostDetailPage        from './pages/PostDetailPage';
 import FacebookCallbackPage  from './pages/FacebookCallbackPage';
+import ResetLoginPage        from './pages/ResetLoginPage';
 import ForgotPasswordPage   from './pages/ForgotPasswordPage';
 import ResetPasswordPage    from './pages/ResetPasswordPage';
 
@@ -70,6 +71,13 @@ function AppRoutes() {
         Must be declared BEFORE /:username to prevent "auth" matching as username.
       */}
       <Route path="/auth/facebook/callback" element={<FacebookCallbackPage />} />
+      {/*
+        ── Reset login (email "Log in as username" button) ──
+        No wrapper — user is logged out when they arrive here.
+        Must be before /:username so "reset-login" is not matched as a username.
+        Declared under /auth/ so it groups naturally with the FB callback.
+      */}
+      <Route path="/auth/reset-login" element={<ResetLoginPage />} />
 
       {/*
         ── Password reset routes ──

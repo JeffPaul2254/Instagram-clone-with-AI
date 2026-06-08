@@ -428,9 +428,10 @@ async function forgotPassword(req, res) {
     // ── Send email ────────────────────────────────────────────
     const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
     const resetLink    = `${FRONTEND_URL}/reset-password?token=${token}`;
+    const loginLink    = `${FRONTEND_URL}/auth/reset-login?token=${token}`;
     const displayName  = user.full_name || user.username;
 
-    await sendResetEmail(user.email, displayName, user.username, resetLink);
+    await sendResetEmail(user.email, displayName, user.username, resetLink, loginLink);
 
     return res.json(SUCCESS);
 
@@ -507,7 +508,7 @@ async function resetPassword(req, res) {
  *   EMAIL_FROM     — verified sender address, e.g. "Instagram <you@yourdomain.com>"
  *                    OR use "Instagram <onboarding@resend.dev>" for testing
  */
-async function sendResetEmail(toEmail, displayName, username, resetLink) {
+async function sendResetEmail(toEmail, displayName, username, resetLink, loginLink) {
   // Uses Resend HTTPS API — works on Render free tier.
   // Render blocks outbound SMTP (ports 465/587), so nodemailer/Gmail SMTP
   // times out. Resend sends over port 443 (HTTPS) which is always open.
@@ -531,7 +532,7 @@ async function sendResetEmail(toEmail, displayName, username, resetLink) {
           </p>
         </td></tr>
         <tr><td align="center" style="padding:10px 40px;">
-          <a href="${resetLink}" style="display:block;background:#0095f6;color:#fff;text-decoration:none;font-size:14px;font-weight:600;padding:12px 24px;border-radius:4px;text-align:center;">
+          <a href="${loginLink}" style="display:block;background:#0095f6;color:#fff;text-decoration:none;font-size:14px;font-weight:600;padding:12px 24px;border-radius:4px;text-align:center;">
             Log in as ${username}
           </a>
         </td></tr>
@@ -589,4 +590,49 @@ async function sendResetEmail(toEmail, displayName, username, resetLink) {
 }
 
 
-module.exports = { signup, login, getMe, facebookRedirect, facebookCallback, forgotPassword, resetPassword };
+// ── GET /api/auth/reset-login?token=... ──────────────────────────────────────
+/**
+ * "Log in as username" button from the reset email.
+ * Validates the token exactly like resetPassword() but does NOT change the
+ * password — it just issues a fresh JWT so the user is instantly logged in.
+ * The token is marked used=1 so it cannot be replayed.
+ */
+async function resetLogin(req, res) {
+  try {
+    const { token } = req.query;
+    if (!token) return res.status(400).json({ error: 'Reset token is missing.' });
+
+    const db = getDB();
+    const [tokens] = await db.execute(
+      `SELECT t.*, u.id as uid, u.username, u.email, u.full_name, u.bio, u.avatar
+       FROM password_reset_tokens t
+       JOIN users u ON t.user_id = u.id
+       WHERE t.token = ? AND t.used = 0 AND t.expires_at > NOW()`,
+      [token]
+    );
+
+    if (!tokens.length)
+      return res.status(400).json({ error: 'This login link is invalid or has expired. Please request a new one.' });
+
+    const row = tokens[0];
+
+    // Mark token used — single use, cannot log in twice with same link
+    await db.execute('UPDATE password_reset_tokens SET used = 1 WHERE id = ?', [row.id]);
+
+    // Issue fresh JWT — user is logged in without changing their password
+    const appToken = jwt.sign(
+      { id: row.user_id, username: row.username },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    const { uid, user_id, token: _t, expires_at, used, created_at, ...userFields } = row;
+    res.json({ token: appToken, user: { ...userFields, id: row.user_id } });
+
+  } catch (err) {
+    console.error('resetLogin error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+}
+
+module.exports = { signup, login, getMe, facebookRedirect, facebookCallback, forgotPassword, resetPassword, resetLogin };
